@@ -61,7 +61,7 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           ]}
         >
           <Ionicons
-            name={activeTab === TABS.HOME ? "home" : "home-outline"}
+            name={isCollapsed && activeTab === TABS.HOME ? "home" : "home-outline"}
             size={24}
             color="white"
           />
@@ -84,7 +84,7 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           ]}
         >
           <Ionicons
-            name={activeTab === TABS.NOWPLAYING ? "musical-notes" : "musical-notes-outline"}
+            name={isCollapsed && activeTab === TABS.NOWPLAYING ? "musical-notes" : "musical-notes-outline"}
             size={24}
             color="white"
           />
@@ -109,7 +109,7 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           ]}
         >
           <Ionicons
-            name={activeTab === TABS.LIBRARY ? "library" : "library-outline"}
+            name={isCollapsed && activeTab === TABS.LIBRARY ? "library" : "library-outline"}
             size={24}
             color="white"
           />
