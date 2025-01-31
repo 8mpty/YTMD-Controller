@@ -43,17 +43,6 @@ export const getLikeStatus = async (videoId) => {
       return !!record.like_status;
     }
 
-    const currentDate = new Date().toLocaleDateString("en-GB");
-    const newId = await getNextId();
-    const newRecord = {
-      id: newId,
-      videoId,
-      like_status: false,
-      updated_date: currentDate,
-    };
-
-    likes.push(newRecord);
-    await AsyncStorage.setItem(LIKES_KEY, JSON.stringify(likes));
     return false;
   } catch (error) {
     console.error("Error getting like status:", error);

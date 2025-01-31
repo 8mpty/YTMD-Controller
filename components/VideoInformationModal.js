@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#333",
-    width: "60%",
+    width: "65%",
     padding: 20,
     alignItems: "center",
   },
@@ -182,13 +182,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#BBB",
   },
-  linkText: {
-    color: "#1E90FF",
-    textDecorationLine: "underline",
-    fontSize: 16,
-    marginTop: 10,
-  },
   copyIcon: {
+    height: 20,
     marginLeft: 5,
   },
 });

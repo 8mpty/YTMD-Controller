@@ -7,7 +7,7 @@ export default function SettingsModal({
   onClose,
   onConfigureIP,
   onManageDatabase,
-  onViewAppInfo
+  onViewAppInfo,
 }) {
   return (
     <Modal
@@ -71,7 +71,6 @@ export default function SettingsModal({
                 </Text>
               </View>
             </TouchableOpacity>
-
           </View>
         </View>
       </View>
