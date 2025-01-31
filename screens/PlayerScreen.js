@@ -18,6 +18,11 @@ import BottomBar from "../components/BottomBar";
 import LyricsPanel from "../components/LyricsPanel";
 import { useApi } from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  initDatabase,
+  getLikeStatus,
+  updateLikeStatus,
+} from "../services/DatabaseService";
 
 export default function PlayerScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -39,6 +44,17 @@ export default function PlayerScreen() {
   const artistSize = Math.min(screenWidth * 0.018, 32);
   const iconSize = Math.min(screenWidth * 0.03, 32);
 
+  useEffect(() => {
+    const setupDatabase = async () => {
+      try {
+        await initDatabase();
+      } catch (error) {
+        console.error("Error setting up database:", error);
+      }
+    };
+    setupDatabase();
+  }, []);
+
   const fetchSongInfo = async () => {
     if (!baseUrl) {
       setError("No API configuration found");
@@ -52,6 +68,11 @@ export default function PlayerScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+
+      if (songInfo?.videoId !== data.videoId) {
+        await fetchLikeStatus(data.videoId);
+      }
+
       setSongInfo(data);
       setError(null);
     } catch (error) {
@@ -110,6 +131,27 @@ export default function PlayerScreen() {
       });
     } catch (error) {
       console.error("Error going to next track:", error);
+    }
+  };
+
+  const fetchLikeStatus = async (videoId) => {
+    try {
+      const status = await getLikeStatus(videoId);
+      setIsLiked(status);
+    } catch (error) {
+      console.error("Error fetching like status:", error);
+    }
+  };
+
+  const handleLikeToggle = async () => {
+    if (songInfo?.videoId) {
+      const newStatus = !isLiked;
+      try {
+        await updateLikeStatus(songInfo.videoId, newStatus);
+        setIsLiked(newStatus);
+      } catch (error) {
+        console.error("Error updating like status:", error);
+      }
     }
   };
 
@@ -256,7 +298,7 @@ export default function PlayerScreen() {
                 <View style={styles.ratingContainer}>
                   <TouchableOpacity
                     style={styles.ratingButton}
-                    onPress={() => setIsLiked(!isLiked)}
+                    onPress={handleLikeToggle}
                   >
                     <Ionicons
                       name={isLiked ? "heart" : "heart-outline"}
@@ -293,7 +335,7 @@ export default function PlayerScreen() {
           songInfo={songInfo}
           onExpand={() => setIsCollapsed(false)}
           isLiked={isLiked}
-          onLikeToggle={() => setIsLiked(!isLiked)}
+          onLikeToggle={handleLikeToggle}
           onPrevious={handlePrevious}
           onNext={handleNext}
           onPlayPause={handlePlayPause}
