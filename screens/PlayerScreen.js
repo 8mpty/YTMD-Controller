@@ -9,10 +9,7 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
-import {
-  useFocusEffect,
-  useNavigation,
-} from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Controls from "../components/Controls";
 import ProgressBar from "../components/ProgressBar";
@@ -351,7 +348,13 @@ export default function PlayerScreen() {
 
           {activeTab === TABS.NOWPLAYING && (
             <View style={styles.placeholderContent}>
-              <NowQueue currentVideoId={songInfo.videoId}/>
+              <NowQueue currentVideoId={songInfo.videoId} />
+            </View>
+          )}
+
+          {activeTab === TABS.LIBRARY && (
+            <View style={styles.placeholderContent}>
+              <Text style={styles.placeholderText}>COMING SOON?</Text>
             </View>
           )}
 
@@ -460,5 +463,6 @@ const styles = StyleSheet.create({
     fontSize: 48,
     fontWeight: "bold",
     textAlign: "center",
+    marginBottom: 100,
   },
 });
