@@ -16,6 +16,7 @@ import ProgressBar from "../components/ProgressBar";
 import TopBar from "../components/TopBar";
 import BottomBar from "../components/BottomBar";
 import LyricsPanel from "../components/LyricsPanel";
+import Clock from "../components/DisplayClock";
 import { useApi } from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -253,6 +254,7 @@ export default function PlayerScreen() {
           }
         }}
         onCollapse={() => setIsCollapsed(true)}
+        isCollapsed={isCollapsed}
       />
       {!isCollapsed ? (
         <View
@@ -325,22 +327,23 @@ export default function PlayerScreen() {
           </View>
           <LyricsPanel isVisible={showLyrics} songInfo={songInfo} />
         </View>
-      ) : (
-        <View style={styles.placeholderContent}>
-          <Text style={styles.placeholderText}>PLACEHOLDER TEXT</Text>
-        </View>
-      )}
+    ) : null }
       {isCollapsed && (
-        <BottomBar
-          songInfo={songInfo}
-          onExpand={() => setIsCollapsed(false)}
-          isLiked={isLiked}
-          onLikeToggle={handleLikeToggle}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onPlayPause={handlePlayPause}
-          baseUrl={baseUrl}
-        />
+        <>
+          <View style={styles.placeholderContent}>
+            <Clock />
+          </View>
+          <BottomBar
+            songInfo={songInfo}
+            onExpand={() => setIsCollapsed(false)}
+            isLiked={isLiked}
+            onLikeToggle={handleLikeToggle}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onPlayPause={handlePlayPause}
+            baseUrl={baseUrl}
+          />
+        </>
       )}
     </View>
   );

@@ -6,27 +6,31 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
 import * as Clipboard from "expo-clipboard";
 
-const InfoText = ({ label, text, onCopy }) => (
-  <Text style={styles.infoText}>
-    <Text style={styles.label}>{label}: </Text>
-    {text}
-    {onCopy && (
-      <TouchableOpacity onPress={() => onCopy(text)}>
-        <Ionicons
-          name="copy-outline"
-          size={20}
-          color="#ff2c86"
-          style={styles.copyIcon}
-        />
-      </TouchableOpacity>
-    )}
-  </Text>
-);
+const InfoText = ({ label, text, onCopy }) => {
+  if (!text) return null;
+  return (
+    <Text style={styles.infoText}>
+      <Text style={styles.label}>{label}: </Text>
+      {text}
+      {onCopy && (
+        <TouchableOpacity onPress={() => onCopy(text)}>
+          <Ionicons
+            name="copy-outline"
+            size={20}
+            color="#ff2c86"
+            style={styles.copyIcon}
+          />
+        </TouchableOpacity>
+      )}
+    </Text>
+  );
+};
 
 export default function VideoInformationModal({ visible, onClose }) {
   const { getBaseUrl } = useApi();
@@ -73,10 +77,18 @@ export default function VideoInformationModal({ visible, onClose }) {
 
   const copyToClipboard = async (text) => {
     try {
-      await Clipboard.setStringAsync(text);
+      if (Platform.OS === "web" && navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        await Clipboard.setStringAsync(text);
+      }
       Alert.alert("Copied", "The text has been copied to clipboard.");
     } catch (error) {
       console.error("Failed to copy text: ", error);
+      Alert.alert(
+        "Error",
+        "Failed to copy text. Try manually selecting and copying."
+      );
     }
   };
 
@@ -100,38 +112,54 @@ export default function VideoInformationModal({ visible, onClose }) {
           </View>
 
           <View style={styles.infoContainer}>
-            <InfoText
-              label="Title"
-              text={videoInfo.title}
-              onCopy={copyToClipboard}
-            />
-            <InfoText
-              label="Artist"
-              text={videoInfo.artist}
-              onCopy={copyToClipboard}
-            />
-            <InfoText
-              label="Album"
-              text={videoInfo.album}
-              onCopy={copyToClipboard}
-            />
-            <InfoText label="Upload Date" text={videoInfo.uploadDate} />
-            <InfoText label="Duration" text={videoInfo.songDuration} />
-            <InfoText
-              label="Video ID"
-              text={videoInfo.videoId}
-              onCopy={copyToClipboard}
-            />
-            <InfoText
-              label="Video URL"
-              text={videoInfo.url}
-              onCopy={copyToClipboard}
-            />
-            <InfoText
-              label="Image Source"
-              text={videoInfo.imageSrc}
-              onCopy={copyToClipboard}
-            />
+            {videoInfo.title && (
+              <InfoText
+                label="Title"
+                text={videoInfo.title}
+                onCopy={copyToClipboard}
+              />
+            )}
+            {videoInfo.artist && (
+              <InfoText
+                label="Artist"
+                text={videoInfo.artist}
+                onCopy={copyToClipboard}
+              />
+            )}
+            {videoInfo.album && (
+              <InfoText
+                label="Album"
+                text={videoInfo.album}
+                onCopy={copyToClipboard}
+              />
+            )}
+            {videoInfo.uploadDate && (
+              <InfoText label="Upload Date" text={videoInfo.uploadDate} />
+            )}
+            {videoInfo.songDuration && (
+              <InfoText label="Duration" text={videoInfo.songDuration} />
+            )}
+            {videoInfo.videoId && (
+              <InfoText
+                label="Video ID"
+                text={videoInfo.videoId}
+                onCopy={copyToClipboard}
+              />
+            )}
+            {videoInfo.url && (
+              <InfoText
+                label="Video URL"
+                text={videoInfo.url}
+                onCopy={copyToClipboard}
+              />
+            )}
+            {videoInfo.imageSrc && (
+              <InfoText
+                label="Image Source"
+                text={videoInfo.imageSrc}
+                onCopy={copyToClipboard}
+              />
+            )}
           </View>
         </View>
       </View>
