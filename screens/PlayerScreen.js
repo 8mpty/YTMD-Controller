@@ -354,7 +354,7 @@ export default function PlayerScreen() {
 
           {activeTab === TABS.LIBRARY && (
             <View style={styles.placeholderContent}>
-              <Text style={styles.placeholderText}>COMING SOON?</Text>
+              <Text style={styles.placeholderText}>COMING SOON</Text>
             </View>
           )}
 
