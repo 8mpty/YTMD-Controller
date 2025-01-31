@@ -55,7 +55,7 @@ export default function BottomBar({
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.controlButton} onPress={onPrevious}>
-            <Ionicons name="play-back" size={24} color="#fff" />
+            <Ionicons name="play-skip-back" size={24} color="#fff" />
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.controlButton} onPress={onPlayPause}>
@@ -67,7 +67,7 @@ export default function BottomBar({
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.controlButton} onPress={onNext}>
-            <Ionicons name="play-forward" size={24} color="#fff" />
+            <Ionicons name="play-skip-forward" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>

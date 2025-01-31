@@ -11,6 +11,7 @@ import VideoInformationModal from "./VideoInformationModal";
 
 const TABS = {
   HOME: "home",
+  NOWPLAYING: "nowplaying",
   LIBRARY: "library",
 };
 
@@ -67,6 +68,29 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           {isCollapsed && activeTab === TABS.HOME && (
             <>
               <Text style={styles.tabText}>Home</Text>
+              <View style={styles.underline} />
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setActiveTab(TABS.NOWPLAYING);
+            onCollapse();
+          }}
+          style={[
+            styles.tabButton,
+            isCollapsed && activeTab === TABS.NOWPLAYING && styles.activeTabContainer,
+          ]}
+        >
+          <Ionicons
+            name={activeTab === TABS.NOWPLAYING ? "musical-notes" : "musical-notes-outline"}
+            size={24}
+            color="white"
+          />
+          {isCollapsed && activeTab === TABS.NOWPLAYING && (
+            <>
+              <Text style={styles.tabText}>Now Playing</Text>
               <View style={styles.underline} />
             </>
           )}
@@ -167,8 +191,8 @@ const styles = StyleSheet.create({
   tabButton: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 5,
-    gap: 8,
+    padding: 8,
+    gap: 10,
   },
   activeTabContainer: {
     flexDirection: "row",

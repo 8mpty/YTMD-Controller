@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
   artwork: {
     borderRadius: 8,
-    marginRight: 20,
+    margin: 15,
   },
   info: {
     flex: 1,
