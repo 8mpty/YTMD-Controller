@@ -156,7 +156,7 @@ export default function PlayerScreen() {
     if (songInfo?.videoId) {
       const newStatus = !isLiked;
       try {
-        await updateLikeStatus(songInfo.videoId, newStatus);
+        await updateLikeStatus(songInfo.videoId, newStatus, songInfo.title, songInfo.imageSrc);
         setIsLiked(newStatus);
       } catch (error) {
         console.error("Error updating like status:", error);

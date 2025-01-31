@@ -50,7 +50,7 @@ export const getLikeStatus = async (videoId) => {
   }
 };
 
-export const updateLikeStatus = async (videoId, status) => {
+export const updateLikeStatus = async (videoId, status, title, imgSrc) => {
   try {
     const likes = await getAllLikes();
     const currentDate = new Date().toLocaleDateString("en-GB");
@@ -65,6 +65,8 @@ export const updateLikeStatus = async (videoId, status) => {
         id: newId,
         videoId,
         like_status: status,
+        title: title,
+        imgSrc: imgSrc,
         updated_date: currentDate,
       });
     }

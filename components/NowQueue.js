@@ -81,12 +81,11 @@ const NowQueue = ({ currentVideoId }) => {
   }, [currentVideoId, queue]);
 
   const handleLikeToggle = useCallback(
-    async (videoId) => {
+    async (videoId, title, imgSrc) => {
       try {
         const currentStatus = likedVideos[videoId] || false;
         const newStatus = !currentStatus;
-
-        await updateLikeStatus(videoId, newStatus);
+        await updateLikeStatus(videoId, newStatus, title, imgSrc);
 
         setLikedVideos((prev) => ({
           ...prev,
@@ -103,6 +102,8 @@ const NowQueue = ({ currentVideoId }) => {
     const videoId = item.playlistPanelVideoRenderer.videoId;
     const isCurrentTrack = videoId === currentVideoId;
     const isLiked = likedVideos[videoId] || false;
+    const title =  item.playlistPanelVideoRenderer.title.runs[0].text
+    const imgSrc = item.playlistPanelVideoRenderer.thumbnail.thumbnails[1].url
 
     return (
       <View style={styles.queueItem}>
@@ -114,14 +115,14 @@ const NowQueue = ({ currentVideoId }) => {
         >
           <Image
             source={{
-              uri: item.playlistPanelVideoRenderer.thumbnail.thumbnails[1].url,
+              uri: imgSrc,
             }}
             style={styles.thumbnail}
             resizeMode="cover"
           />
           <TouchableOpacity
             style={styles.likeButton}
-            onPress={() => handleLikeToggle(videoId)}
+            onPress={() => handleLikeToggle(videoId,title,imgSrc)}
           >
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
@@ -135,7 +136,7 @@ const NowQueue = ({ currentVideoId }) => {
             style={[styles.title, isCurrentTrack && styles.currentTrackTitle]}
             numberOfLines={1}
           >
-            {item.playlistPanelVideoRenderer.title.runs[0].text}
+            {title}
           </Text>
         </View>
       </View>

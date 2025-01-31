@@ -53,6 +53,7 @@ export default function DatabaseModal({ visible, onClose, onClearDatabase }) {
           <View style={styles.contentContainer}>
             <View style={styles.tableHeader}>
               <Text style={[styles.headerText, { flex: 0.1 }]}>ID</Text>
+              <Text style={[styles.headerText, { flex: 0.4 }]}>Title</Text>
               <Text style={[styles.headerText, { flex: 0.4 }]}>Video ID</Text>
               <Text style={[styles.headerText, { flex: 0.25 }]}>Status</Text>
               <Text style={[styles.headerText, { flex: 0.25 }]}>Updated</Text>
@@ -64,6 +65,9 @@ export default function DatabaseModal({ visible, onClose, onClearDatabase }) {
                   <View key={like.id} style={styles.tableRow}>
                     <Text style={[styles.cellText, { flex: 0.1 }]}>
                       {like.id}
+                    </Text>
+                    <Text style={[styles.cellText, { flex: 0.4 }]}>
+                      {like.title}
                     </Text>
                     <Text style={[styles.cellText, { flex: 0.4 }]}>
                       {like.videoId}
