@@ -7,6 +7,7 @@ export default function SettingsModal({
   onClose,
   onConfigureIP,
   onManageDatabase,
+  onViewAppInfo
 }) {
   return (
     <Modal
@@ -55,6 +56,22 @@ export default function SettingsModal({
                 </Text>
               </View>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.option} onPress={onViewAppInfo}>
+              <Ionicons
+                name="information-circle-outline"
+                size={24}
+                color="#fff"
+                style={styles.optionIcon}
+              />
+              <View style={styles.optionTextContainer}>
+                <Text style={styles.optionText}>App Information</Text>
+                <Text style={styles.optionDescription}>
+                  View app information
+                </Text>
+              </View>
+            </TouchableOpacity>
+
           </View>
         </View>
       </View>

@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SettingsModal from "./SettingsModal";
 import DatabaseModal from "./DatabaseModal";
 import { clearDatabase } from "../services/DatabaseService";
+import VideoInformationModal from "./VideoInformationModal";
 
 export default function TopBar({ onRefresh, onCollapse }) {
   const navigation = useNavigation();
@@ -14,6 +15,7 @@ export default function TopBar({ onRefresh, onCollapse }) {
   const insets = useSafeAreaInsets();
   const [showSettings, setShowSettings] = useState(false);
   const [showDatabase, setShowDatabase] = useState(false);
+  const [showVideoInfo, setShowVideoInfo] = useState(false); 
 
   const handleConfigureIP = async () => {
     setShowSettings(false);
@@ -44,16 +46,18 @@ export default function TopBar({ onRefresh, onCollapse }) {
         <Ionicons name="home-outline" size={24} color="white" />
       </TouchableOpacity>
       <View style={styles.rightButtons}>
+        <TouchableOpacity onPress={() => setShowVideoInfo(true)} style={styles.button}>
+          <Ionicons name="bug-outline" size={24} color="white" />
+        </TouchableOpacity>
         <TouchableOpacity onPress={onRefresh} style={styles.button}>
           <Ionicons name="refresh-outline" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setShowSettings(true)}
-          style={styles.button}
-        >
+        <TouchableOpacity onPress={() => setShowSettings(true)} style={styles.button}>
           <Ionicons name="settings-outline" size={24} color="white" />
         </TouchableOpacity>
       </View>
+
+      <VideoInformationModal visible={showVideoInfo} onClose={() => setShowVideoInfo(false)} />
 
       <SettingsModal
         visible={showSettings}
@@ -63,6 +67,7 @@ export default function TopBar({ onRefresh, onCollapse }) {
           setShowSettings(false);
           setShowDatabase(true);
         }}
+        onViewAppInfo={() => {}}
       />
 
       <DatabaseModal
