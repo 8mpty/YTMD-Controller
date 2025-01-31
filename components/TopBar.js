@@ -15,8 +15,7 @@ const TABS = {
   LIBRARY: "library",
 };
 
-export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
-  const [activeTab, setActiveTab] = useState(TABS.HOME);
+export default function TopBar({ onRefresh, onCollapse, isCollapsed,setActiveTab, activeTab}) {
   const navigation = useNavigation();
   const { clearApiConfig } = useApi();
   const insets = useSafeAreaInsets();
@@ -61,7 +60,9 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           ]}
         >
           <Ionicons
-            name={isCollapsed && activeTab === TABS.HOME ? "home" : "home-outline"}
+            name={
+              isCollapsed && activeTab === TABS.HOME ? "home" : "home-outline"
+            }
             size={24}
             color="white"
           />
@@ -80,11 +81,17 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           }}
           style={[
             styles.tabButton,
-            isCollapsed && activeTab === TABS.NOWPLAYING && styles.activeTabContainer,
+            isCollapsed &&
+              activeTab === TABS.NOWPLAYING &&
+              styles.activeTabContainer,
           ]}
         >
           <Ionicons
-            name={isCollapsed && activeTab === TABS.NOWPLAYING ? "musical-notes" : "musical-notes-outline"}
+            name={
+              isCollapsed && activeTab === TABS.NOWPLAYING
+                ? "musical-notes"
+                : "musical-notes-outline"
+            }
             size={24}
             color="white"
           />
@@ -109,7 +116,11 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed }) {
           ]}
         >
           <Ionicons
-            name={isCollapsed && activeTab === TABS.LIBRARY ? "library" : "library-outline"}
+            name={
+              isCollapsed && activeTab === TABS.LIBRARY
+                ? "library"
+                : "library-outline"
+            }
             size={24}
             color="white"
           />

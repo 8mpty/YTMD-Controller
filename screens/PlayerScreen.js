@@ -9,7 +9,10 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Controls from "../components/Controls";
 import ProgressBar from "../components/ProgressBar";
@@ -17,6 +20,7 @@ import TopBar from "../components/TopBar";
 import BottomBar from "../components/BottomBar";
 import LyricsPanel from "../components/LyricsPanel";
 import Clock from "../components/DisplayClock";
+import NowQueue from "../components/NowQueue";
 import { useApi } from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -24,6 +28,12 @@ import {
   getLikeStatus,
   updateLikeStatus,
 } from "../services/DatabaseService";
+
+const TABS = {
+  HOME: "home",
+  NOWPLAYING: "nowplaying",
+  LIBRARY: "library",
+};
 
 export default function PlayerScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -34,6 +44,7 @@ export default function PlayerScreen() {
   const { getBaseUrl, clearApiConfig } = useApi();
   const [isLiked, setIsLiked] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState(TABS.HOME);
 
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
@@ -255,6 +266,8 @@ export default function PlayerScreen() {
         }}
         onCollapse={() => setIsCollapsed(true)}
         isCollapsed={isCollapsed}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
       {!isCollapsed ? (
         <View
@@ -327,12 +340,21 @@ export default function PlayerScreen() {
           </View>
           <LyricsPanel isVisible={showLyrics} songInfo={songInfo} />
         </View>
-    ) : null }
+      ) : null}
       {isCollapsed && (
         <>
-          <View style={styles.placeholderContent}>
-            <Clock />
-          </View>
+          {activeTab === TABS.HOME && (
+            <View style={styles.placeholderContent}>
+              <Clock />
+            </View>
+          )}
+
+          {activeTab === TABS.NOWPLAYING && (
+            <View style={styles.placeholderContent}>
+              <NowQueue currentVideoId={songInfo.videoId}/>
+            </View>
+          )}
+
           <BottomBar
             songInfo={songInfo}
             onExpand={() => setIsCollapsed(false)}
