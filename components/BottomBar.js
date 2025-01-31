@@ -31,7 +31,7 @@ export default function BottomBar({
         duration={songInfo.songDuration}
         widthPercentage={95}
       />
-      
+
       <View style={styles.content}>
         <TouchableOpacity style={styles.songInfo} onPress={onExpand}>
           <Image source={{ uri: songInfo.imageSrc }} style={styles.thumbnail} />

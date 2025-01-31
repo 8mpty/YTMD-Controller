@@ -1,14 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useApi } from "../context/ApiContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import SettingsModal from "./SettingsModal";
+import DatabaseModal from "./DatabaseModal";
+import { clearDatabase } from "../services/DatabaseService";
 
 export default function TopBar({ onRefresh, onCollapse }) {
   const navigation = useNavigation();
   const { clearApiConfig } = useApi();
   const insets = useSafeAreaInsets();
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDatabase, setShowDatabase] = useState(false);
+
+  const handleConfigureIP = async () => {
+    setShowSettings(false);
+    await clearApiConfig();
+    navigation.replace("Setup");
+  };
+
+  const handleClearDatabase = async () => {
+    try {
+      await clearDatabase();
+    } catch (error) {
+      console.error("Error clearing database:", error);
+    }
+  };
 
   return (
     <View
@@ -29,15 +48,28 @@ export default function TopBar({ onRefresh, onCollapse }) {
           <Ionicons name="refresh-outline" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={async () => {
-            await clearApiConfig();
-            navigation.replace("Setup");
-          }}
+          onPress={() => setShowSettings(true)}
           style={styles.button}
         >
           <Ionicons name="settings-outline" size={24} color="white" />
         </TouchableOpacity>
       </View>
+
+      <SettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        onConfigureIP={handleConfigureIP}
+        onManageDatabase={() => {
+          setShowSettings(false);
+          setShowDatabase(true);
+        }}
+      />
+
+      <DatabaseModal
+        visible={showDatabase}
+        onClose={() => setShowDatabase(false)}
+        onClearDatabase={handleClearDatabase}
+      />
     </View>
   );
 }
