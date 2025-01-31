@@ -24,7 +24,13 @@ export default function LyricsPanel({ songInfo, isVisible }) {
         const artist = encodeURIComponent(songInfo.artist);
         const track = encodeURIComponent(songInfo.title);
         const response = await fetch(
-          `https://lrclib.net/api/get?artist_name=${artist}&track_name=${track}`
+          `https://lrclib.net/api/get?artist_name=${artist}&track_name=${track}`,
+          {
+            headers: {
+              "Lrclib-Client":
+                "YTMD-Controller (https://github.com/8mpty/YTMD-Controller)",
+            },
+          }
         );
 
         if (!response.ok) {
