@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "YTMD-Controller",
-    "slug": "YTMD-Controller",
+    "slug": "ytmd-controller",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -40,6 +40,12 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2f2d6798-37c7-42aa-8bb5-7fb5d2d21373"
+      }
+    },
+    "owner": "8mpty"
   }
 }
