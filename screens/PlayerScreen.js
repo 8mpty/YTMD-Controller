@@ -176,6 +176,22 @@ export default function PlayerScreen() {
     setRefreshKey(prev => prev + 1);
   };
 
+  const handleSeek = async (seconds) => {
+    if (!baseUrl) return;
+    try {
+      await fetch(`${baseUrl}/api/v1/seek-to`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ seconds }),
+      });
+      // Update will happen automatically through the polling mechanism
+    } catch (error) {
+      console.error('Error seeking:', error);
+    }
+  };
+
   const NoConnectionContent = () => (
     <View style={styles.noConnectionContainer}>
       <Text style={styles.noConnectionText}>
@@ -265,6 +281,7 @@ export default function PlayerScreen() {
                   <ProgressBar
                     elapsed={songInfo.elapsedSeconds}
                     duration={songInfo.songDuration}
+                    onSeek={handleSeek}
                   />
                   <Controls
                     ref={controlsRef}
@@ -326,6 +343,7 @@ export default function PlayerScreen() {
           onPrevious={handlePrevious}
           onNext={handleNext}
           onPlayPause={handlePlayPause}
+          onSeek={handleSeek}
         />
       )}
     </View>

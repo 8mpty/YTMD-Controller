@@ -1,17 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
+import Slider from "@react-native-community/slider";
 
 export default function ProgressBar({
   elapsed,
   duration,
   widthPercentage = 100,
   marginRight,
+  onSeek,
 }) {
-  const progress = (elapsed / duration) * 100;
+  const [localElapsed, setLocalElapsed] = useState(elapsed);
+
+  if (elapsed !== localElapsed ) {
+    setLocalElapsed(elapsed);
+  }
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleValueChange = (value) => {
+    setLocalElapsed(value);
+  };
+
+  const handleSlidingComplete = (value) => {
+    onSeek(Math.floor(value));
   };
 
   return (
@@ -25,9 +40,19 @@ export default function ProgressBar({
         },
       ]}
     >
-      <Text style={styles.time}>{formatTime(elapsed)}</Text>
-      <View style={styles.bar}>
-        <View style={[styles.progress, { width: `${progress}%` }]} />
+      <Text style={styles.time}>{formatTime(localElapsed)}</Text>
+      <View style={styles.sliderContainer}>
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={duration}
+          value={localElapsed}
+          onValueChange={handleValueChange}
+          onSlidingComplete={handleSlidingComplete}
+          minimumTrackTintColor="#ff2c86"
+          maximumTrackTintColor="rgba(255, 255, 255, 0.3)"
+          thumbTintColor="#fff"
+        />
       </View>
       <Text style={styles.time}>{formatTime(duration)}</Text>
     </View>
@@ -38,29 +63,15 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 0,
   },
-  bar: {
+  sliderContainer: {
     flex: 1,
-    height: 4,
-    backgroundColor: "transparent",
-    borderRadius: 2,
     marginHorizontal: 10,
-    justifyContent: "center",
   },
-  progressBackground: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    borderRadius: 2,
-  },
-  progress: {
-    position: "absolute",
-    height: "100%",
-    backgroundColor: "#ff2c86",
-    borderRadius: 2,
+  slider: {
+    width: "100%",
+    height: 25,
   },
   time: {
     color: "#D3D3D3",

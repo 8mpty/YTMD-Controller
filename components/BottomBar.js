@@ -12,6 +12,7 @@ export default function BottomBar({
   onPrevious,
   onNext,
   onPlayPause,
+  onSeek,
 }) {
   const insets = useSafeAreaInsets();
 
@@ -30,8 +31,8 @@ export default function BottomBar({
         elapsed={songInfo.elapsedSeconds}
         duration={songInfo.songDuration}
         widthPercentage={95}
+        onSeek={onSeek}
       />
-
       <View style={styles.content}>
         <TouchableOpacity style={styles.songInfo} onPress={onExpand}>
           <Image source={{ uri: songInfo.imageSrc }} style={styles.thumbnail} />
