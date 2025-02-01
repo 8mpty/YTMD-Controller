@@ -15,7 +15,7 @@ import { useApi } from "../context/ApiContext";
 
 const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
 const ITEM_WIDTH = viewportWidth * 0.22;
-const ITEM_HEIGHT = ITEM_WIDTH * (1 / 1);
+const ITEM_HEIGHT = ITEM_WIDTH * (1.05 / 1.18);
 
 const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refreshKey }) => {
   const [queue, setQueue] = useState([]);
@@ -37,7 +37,6 @@ const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refresh
   useEffect(() => {
     if (isActive || refreshKey) { 
       fetchQueue();
-      console.log("called");
     }
   }, [isActive, fetchQueue, refreshKey]);
 
@@ -180,7 +179,7 @@ const styles = StyleSheet.create({
   queueItem: {
     alignItems: "center",
     marginHorizontal: viewportWidth * 0.025,
-    marginBottom: 100,
+    marginBottom: 135,
   },
   itemContainer: {
     width: ITEM_WIDTH,

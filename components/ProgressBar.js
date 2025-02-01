@@ -63,15 +63,14 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 0,
+    marginTop: 5,
   },
   sliderContainer: {
     flex: 1,
-    marginHorizontal: 10,
   },
   slider: {
     width: "100%",
-    height: 25,
+    height: 5
   },
   time: {
     color: "#D3D3D3",

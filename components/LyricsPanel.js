@@ -6,8 +6,10 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LyricsPanel({ songInfo, isVisible }) {
+  const insets = useSafeAreaInsets();
   const [lyrics, setLyrics] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -54,7 +56,15 @@ export default function LyricsPanel({ songInfo, isVisible }) {
   if (!isVisible) return null;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          top: insets.top + 10,
+          bottom: insets.bottom + 30,
+        },
+      ]}
+    >
       <ScrollView style={styles.scrollView}>
         {isLoading ? (
           <View style={styles.centered}>
@@ -73,14 +83,11 @@ export default function LyricsPanel({ songInfo, isVisible }) {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 10,
     right: 0,
     width: "30%",
-    bottom: 30,
     backgroundColor: "rgba(0, 0, 0, 0.9)",
-    borderLeftWidth: 0,
-    borderLeftColor: "#333",
     zIndex: 1,
+    marginRight: 40
   },
   scrollView: {
     flex: 1,
