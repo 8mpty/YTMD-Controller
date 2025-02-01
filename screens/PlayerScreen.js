@@ -4,9 +4,7 @@ import {
   StyleSheet,
   Image,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
-  Alert,
   useWindowDimensions,
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -32,16 +30,25 @@ const TABS = {
   LIBRARY: "library",
 };
 
+const NO_CONNECTION_SONG_INFO = {
+  title: "Please configure your connection first",
+  artist: "No connection",
+  imageSrc: null,
+  videoId: null,
+  elapsedSeconds: 0,
+  songDuration: 0,
+  isPaused: true,
+};
+
 export default function PlayerScreen() {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [songInfo, setSongInfo] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [songInfo, setSongInfo] = useState(NO_CONNECTION_SONG_INFO);
+  const [isLoading, setIsLoading] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
-  const { getBaseUrl, clearApiConfig } = useApi();
-  const [isLiked, setIsLiked] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { getBaseUrl } = useApi();
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [activeTab, setActiveTab] = useState(TABS.HOME);
+  const [likedTracks, setLikedTracks] = useState({});
 
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
@@ -64,10 +71,33 @@ export default function PlayerScreen() {
     setupDatabase();
   }, []);
 
+  const updateTrackLikeStatus = async (videoId, newStatus, title, imgSrc) => {
+    try {
+      await updateLikeStatus(videoId, newStatus, title, imgSrc);
+      setLikedTracks(prev => ({
+        ...prev,
+        [videoId]: newStatus
+      }));
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    }
+  };
+
+  const fetchLikeStatus = async (videoId) => {
+    try {
+      const status = await getLikeStatus(videoId);
+      setLikedTracks(prev => ({
+        ...prev,
+        [videoId]: status
+      }));
+    } catch (error) {
+      console.error("Error fetching like status:", error);
+    }
+  };
+
   const fetchSongInfo = async () => {
     if (!baseUrl) {
-      setError("No API configuration found");
-      setIsLoading(false);
+      setSongInfo(NO_CONNECTION_SONG_INFO);
       return;
     }
 
@@ -77,90 +107,15 @@ export default function PlayerScreen() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-
       if (songInfo?.videoId !== data.videoId) {
         await fetchLikeStatus(data.videoId);
       }
-
       setSongInfo(data);
-      setError(null);
     } catch (error) {
       console.error("Error fetching song info:", error);
-      setError(
-        "Failed to connect to the server. Please check your connection settings."
-      );
-
-      Alert.alert(
-        "Connection Error",
-        "Failed to connect to the server. Would you like to reconfigure the connection?",
-        [
-          {
-            text: "Try Again",
-            onPress: () => fetchSongInfo(),
-            style: "cancel",
-          },
-          {
-            text: "Reconfigure",
-            onPress: async () => {
-              await clearApiConfig();
-              navigation.replace("Setup");
-            },
-          },
-        ]
-      );
+      setSongInfo(NO_CONNECTION_SONG_INFO);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handlePlayPause = async () => {
-    try {
-      await fetch(`${baseUrl}/api/v1/toggle-play`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Error toggling play/pause:", error);
-    }
-  };
-
-  const handlePrevious = async () => {
-    try {
-      await fetch(`${baseUrl}/api/v1/previous`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Error going to previous track:", error);
-    }
-  };
-
-  const handleNext = async () => {
-    try {
-      await fetch(`${baseUrl}/api/v1/next`, {
-        method: "POST",
-      });
-    } catch (error) {
-      console.error("Error going to next track:", error);
-    }
-  };
-
-  const fetchLikeStatus = async (videoId) => {
-    try {
-      const status = await getLikeStatus(videoId);
-      setIsLiked(status);
-    } catch (error) {
-      console.error("Error fetching like status:", error);
-    }
-  };
-
-  const handleLikeToggle = async () => {
-    if (songInfo?.videoId) {
-      const newStatus = !isLiked;
-      try {
-        await updateLikeStatus(songInfo.videoId, newStatus, songInfo.title, songInfo.imageSrc);
-        setIsLiked(newStatus);
-      } catch (error) {
-        console.error("Error updating like status:", error);
-      }
     }
   };
 
@@ -170,7 +125,9 @@ export default function PlayerScreen() {
 
       const startPolling = () => {
         fetchSongInfo();
-        interval = setInterval(fetchSongInfo, 1000);
+        if (baseUrl) {
+          interval = setInterval(fetchSongInfo, 1000);
+        }
       };
 
       startPolling();
@@ -183,74 +140,46 @@ export default function PlayerScreen() {
     }, [baseUrl])
   );
 
-  if (isLoading) {
-    return (
-      <View
-        style={[
-          styles.centered,
-          {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          },
-        ]}
-      >
-        <ActivityIndicator size="large" color="#fff" />
-      </View>
-    );
-  }
+  const handlePlayPause = async () => {
+    if (!baseUrl) return;
+    try {
+      await fetch(`${baseUrl}/api/v1/toggle-play`, { method: "POST" });
+    } catch (error) {
+      console.error("Error toggling play/pause:", error);
+    }
+  };
 
-  if (error) {
-    return (
-      <View
-        style={[
-          styles.centered,
-          {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          },
-        ]}
-      >
-        <Text style={styles.errorText}>{error}</Text>
-        <View style={styles.errorButtons}>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchSongInfo}>
-            <Text style={styles.retryText}>Retry</Text>
-          </TouchableOpacity>
+  const handlePrevious = async () => {
+    if (!baseUrl) return;
+    try {
+      await fetch(`${baseUrl}/api/v1/previous`, { method: "POST" });
+    } catch (error) {
+      console.error("Error going to previous track:", error);
+    }
+  };
 
-          <TouchableOpacity
-            style={[styles.retryButton]}
-            onPress={async () => {
-              await clearApiConfig();
-              navigation.replace("Setup");
-            }}
-          >
-            <Text style={styles.retryText}>Change IP</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  const handleNext = async () => {
+    if (!baseUrl) return;
+    try {
+      await fetch(`${baseUrl}/api/v1/next`, { method: "POST" });
+    } catch (error) {
+      console.error("Error going to next track:", error);
+    }
+  };
 
-  if (!songInfo) {
-    return (
-      <View
-        style={[
-          styles.centered,
-          {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          },
-        ]}
+  const NoConnectionContent = () => (
+    <View style={styles.noConnectionContainer}>
+      <Text style={styles.noConnectionText}>
+        Please configure your connection first
+      </Text>
+      <TouchableOpacity
+        style={styles.configureButton}
+        onPress={() => navigation.navigate("Setup")}
       >
-        <Text style={styles.errorText}>No song information available</Text>
-      </View>
-    );
-  }
+        <Text style={styles.configureButtonText}>Configure Now</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -278,67 +207,75 @@ export default function PlayerScreen() {
             },
           ]}
         >
-          <View
-            style={[styles.mainContent, showLyrics && { paddingRight: "32%" }]}
-          >
-            <View style={styles.topSection}>
-              <Image
-                source={{ uri: songInfo.imageSrc }}
-                style={[
-                  styles.artwork,
-                  {
-                    width: imageSize,
-                    height: imageSize,
-                  },
-                ]}
-              />
-              <View style={[styles.info, { paddingRight: screenWidth * 0.1 }]}>
-                <Text
-                  style={[styles.title, { fontSize: titleSize }]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {songInfo.title}
-                </Text>
-                <Text
-                  style={[styles.artist, { fontSize: artistSize }]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {songInfo.artist}
-                </Text>
-                <View style={styles.ratingContainer}>
-                  <TouchableOpacity
-                    style={styles.ratingButton}
-                    onPress={handleLikeToggle}
-                  >
-                    <Ionicons
-                      name={isLiked ? "heart" : "heart-outline"}
-                      size={iconSize}
-                      color={isLiked ? "#ff4545" : "#666666"}
-                    />
-                  </TouchableOpacity>
+          <View style={[styles.mainContent, showLyrics && { paddingRight: "32%" }]}>
+            {!baseUrl ? (
+              <NoConnectionContent />
+            ) : (
+              <>
+                <View style={styles.topSection}>
+                  <Image
+                    source={
+                      songInfo.imageSrc
+                        ? { uri: songInfo.imageSrc }
+                        : require("../assets/no-connection.png")
+                    }
+                    style={[styles.artwork, { width: imageSize, height: imageSize }]}
+                  />
+                  <View style={[styles.info, { paddingRight: screenWidth * 0.1 }]}>
+                    <Text
+                      style={[styles.title, { fontSize: titleSize }]}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {songInfo.title}
+                    </Text>
+                    <Text
+                      style={[styles.artist, { fontSize: artistSize }]}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {songInfo.artist}
+                    </Text>
+                    <View style={styles.ratingContainer}>
+                      <TouchableOpacity
+                        style={styles.ratingButton}
+                        onPress={() => 
+                          updateTrackLikeStatus(
+                            songInfo.videoId, 
+                            !likedTracks[songInfo.videoId],
+                            songInfo.title,
+                            songInfo.imageSrc
+                          )
+                        }
+                      >
+                        <Ionicons
+                          name={likedTracks[songInfo.videoId] ? "heart" : "heart-outline"}
+                          size={iconSize}
+                          color={likedTracks[songInfo.videoId] ? "#ff4545" : "#666666"}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
-              </View>
-            </View>
-            <View style={styles.bottomSection}>
-              <ProgressBar
-                elapsed={songInfo.elapsedSeconds}
-                duration={songInfo.songDuration}
-              />
-              <Controls
-                ref={controlsRef}
-                isPaused={songInfo.isPaused}
-                baseUrl={baseUrl}
-                onLyricsToggle={() => setShowLyrics(!showLyrics)}
-                showLyrics={showLyrics}
-              />
-            </View>
+                <View style={styles.bottomSection}>
+                  <ProgressBar
+                    elapsed={songInfo.elapsedSeconds}
+                    duration={songInfo.songDuration}
+                  />
+                  <Controls
+                    ref={controlsRef}
+                    isPaused={songInfo.isPaused}
+                    baseUrl={baseUrl}
+                    onLyricsToggle={() => setShowLyrics(!showLyrics)}
+                    showLyrics={showLyrics}
+                  />
+                </View>
+              </>
+            )}
           </View>
           <LyricsPanel isVisible={showLyrics} songInfo={songInfo} />
         </View>
-      ) : null}
-      {isCollapsed && (
+      ) : (
         <>
           {activeTab === TABS.HOME && (
             <View style={styles.placeholderContent}>
@@ -348,7 +285,16 @@ export default function PlayerScreen() {
 
           {activeTab === TABS.NOWPLAYING && (
             <View style={styles.placeholderContent}>
-              <NowQueue currentVideoId={songInfo.videoId} />
+              {!baseUrl ? (
+                <NoConnectionContent />
+              ) : (
+                <NowQueue 
+                  currentVideoId={songInfo.videoId}
+                  isActive={activeTab === TABS.NOWPLAYING}
+                  likedTracks={likedTracks}
+                  onLikeToggle={updateTrackLikeStatus}
+                />
+              )}
             </View>
           )}
 
@@ -357,18 +303,26 @@ export default function PlayerScreen() {
               <Text style={styles.placeholderText}>COMING SOON</Text>
             </View>
           )}
-
-          <BottomBar
-            songInfo={songInfo}
-            onExpand={() => setIsCollapsed(false)}
-            isLiked={isLiked}
-            onLikeToggle={handleLikeToggle}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onPlayPause={handlePlayPause}
-            baseUrl={baseUrl}
-          />
         </>
+      )}
+      {isCollapsed && (
+        <BottomBar
+          songInfo={songInfo}
+          onExpand={() => setIsCollapsed(false)}
+          isLiked={likedTracks[songInfo.videoId] || false}
+          onLikeToggle={() => 
+            updateTrackLikeStatus(
+              songInfo.videoId, 
+              !likedTracks[songInfo.videoId],
+              songInfo.title,
+              songInfo.imageSrc
+            )
+          }
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onPlayPause={handlePlayPause}
+          baseUrl={baseUrl}
+        />
       )}
     </View>
   );
@@ -386,6 +340,27 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     position: "relative",
+  },
+  noConnectionContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noConnectionText: {
+    color: "#666",
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  configureButton: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    borderRadius: 5,
+    minWidth: 150,
+    alignItems: "center",
+  },
+  configureButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
   topSection: {
     flexDirection: "row",
@@ -412,37 +387,6 @@ const styles = StyleSheet.create({
   bottomSection: {
     width: "100%",
     paddingBottom: 20,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#000",
-  },
-  errorText: {
-    color: "#fff",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  errorButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
-  },
-  retryButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-    minWidth: 100,
-    alignItems: "center",
-  },
-  retryText: {
-    color: "#fff",
-    fontSize: 16,
   },
   ratingContainer: {
     flexDirection: "row",

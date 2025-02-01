@@ -12,63 +12,46 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
-import { getLikeStatus, updateLikeStatus } from "../services/DatabaseService";
 
-const { width: viewportWidth, height: viewportHeight } =
-  Dimensions.get("window");
+const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
 const ITEM_WIDTH = viewportWidth * 0.22;
 const ITEM_HEIGHT = ITEM_WIDTH * (1 / 1);
 
-const NowQueue = ({ currentVideoId }) => {
+const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle }) => {
   const [queue, setQueue] = useState([]);
-  const [likedVideos, setLikedVideos] = useState({});
   const { getBaseUrl } = useApi();
   const baseUrl = getBaseUrl();
   const flatListRef = useRef(null);
   const scrollViewRef = useRef(null);
-  const [scrollX, setScrollX] = useState(0);
 
   const fetchQueue = useCallback(async () => {
     try {
       const response = await fetch(`${baseUrl}/api/v1/queue`);
       const data = await response.json();
-
-      // Fetch like statuses in parallel
-      const likeStatuses = await Promise.all(
-        data.items.map(async (item) => {
-          const videoId = item.playlistPanelVideoRenderer.videoId;
-          try {
-            const likeStatus = await getLikeStatus(videoId);
-            return [videoId, likeStatus];
-          } catch (error) {
-            console.error(`Error fetching like status for ${videoId}:`, error);
-            return [videoId, false];
-          }
-        })
-      );
-
-      // More efficient state update
       setQueue(data.items);
-      setLikedVideos(Object.fromEntries(likeStatuses));
     } catch (error) {
       console.error("Error fetching queue:", error);
     }
   }, [baseUrl]);
 
+  // Initial fetch when component becomes active
   useEffect(() => {
-    fetchQueue();
-  }, [fetchQueue]);
+    if (isActive) {
+      fetchQueue();
+    }
+  }, [isActive, fetchQueue]);
 
+  // Handle scrolling to current track only when currentVideoId changes
   useEffect(() => {
-    if (currentVideoId && queue.length > 0) {
+    if (isActive && currentVideoId && queue.length > 0) {
       const index = queue.findIndex(
         (item) => item.playlistPanelVideoRenderer.videoId === currentVideoId
       );
 
       if (index !== -1) {
-        if (Platform.OS === "web") {
+        if (Platform.OS === "web" && scrollViewRef.current) {
           const scrollPosition = index * (ITEM_WIDTH + viewportWidth * 0.05);
-          setScrollX(scrollPosition);
+          scrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
         } else if (flatListRef.current) {
           flatListRef.current.scrollToIndex({
             index,
@@ -78,32 +61,15 @@ const NowQueue = ({ currentVideoId }) => {
         }
       }
     }
-  }, [currentVideoId, queue]);
-
-  const handleLikeToggle = useCallback(
-    async (videoId, title, imgSrc) => {
-      try {
-        const currentStatus = likedVideos[videoId] || false;
-        const newStatus = !currentStatus;
-        await updateLikeStatus(videoId, newStatus, title, imgSrc);
-
-        setLikedVideos((prev) => ({
-          ...prev,
-          [videoId]: newStatus,
-        }));
-      } catch (error) {
-        console.error(`Error toggling like for ${videoId}:`, error);
-      }
-    },
-    [likedVideos]
-  );
+  }, [currentVideoId, queue, isActive]);
 
   const renderItem = ({ item, index }) => {
     const videoId = item.playlistPanelVideoRenderer.videoId;
     const isCurrentTrack = videoId === currentVideoId;
-    const isLiked = likedVideos[videoId] || false;
-    const title =  item.playlistPanelVideoRenderer.title.runs[0].text
-    const imgSrc = item.playlistPanelVideoRenderer.thumbnail.thumbnails[1].url
+    const isLiked = likedTracks[videoId] || false;
+    const title = item.playlistPanelVideoRenderer.title.runs[0].text;
+    const thumbnails = item.playlistPanelVideoRenderer.thumbnail.thumbnails;
+    const imgSrc = thumbnails[thumbnails.length - 1].url;
 
     return (
       <View style={styles.queueItem}>
@@ -114,15 +80,13 @@ const NowQueue = ({ currentVideoId }) => {
           ]}
         >
           <Image
-            source={{
-              uri: imgSrc,
-            }}
+            source={{ uri: imgSrc }}
             style={styles.thumbnail}
             resizeMode="cover"
           />
           <TouchableOpacity
             style={styles.likeButton}
-            onPress={() => handleLikeToggle(videoId,title,imgSrc)}
+            onPress={() => onLikeToggle(videoId, !isLiked, title, imgSrc)}
           >
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
@@ -143,10 +107,6 @@ const NowQueue = ({ currentVideoId }) => {
     );
   };
 
-  const handleScroll = (event) => {
-    setScrollX(event.nativeEvent.contentOffset.x);
-  };
-
   return (
     <View style={styles.container}>
       {Platform.OS === "web" ? (
@@ -154,14 +114,11 @@ const NowQueue = ({ currentVideoId }) => {
           <ScrollView
             ref={scrollViewRef}
             horizontal
-            pagingEnabled
             showsHorizontalScrollIndicator={true}
             contentContainerStyle={styles.carousel}
-            decelerationRate="fast"
             style={styles.webScrollView}
-            onScroll={handleScroll}
             scrollEventThrottle={16}
-            contentOffset={{ x: scrollX, y: 0 }}
+            decelerationRate="normal"
           >
             {queue.map((item, index) => (
               <View
@@ -267,10 +224,6 @@ const styles = StyleSheet.create({
   },
   currentTrackTitle: {
     color: "#ff2c86",
-  },
-  index: {
-    color: "#ccc",
-    fontSize: viewportWidth * 0.035,
   },
 });
 

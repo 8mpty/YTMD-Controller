@@ -74,6 +74,10 @@ export default function SetupScreen({ navigation }) {
     }
   };
 
+  const handleSkip = () => {
+    navigation.replace("Player");
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Setup Connection</Text>
@@ -105,6 +109,14 @@ export default function SetupScreen({ navigation }) {
         ) : (
           <Text style={styles.buttonText}>Connect</Text>
         )}
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.skipButton]}
+        onPress={handleSkip}
+        disabled={isConnecting}
+      >
+        <Text style={styles.skipButtonText}>Skip</Text>
       </TouchableOpacity>
     </View>
   );
@@ -148,6 +160,16 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "white",
+    fontSize: 16,
+  },
+  skipButton: {
+    marginTop: 10,
+    padding: 10,
+    width: "80%",
+    alignItems: "center",
+  },
+  skipButtonText: {
+    color: "#666",
     fontSize: 16,
   },
   error: {
