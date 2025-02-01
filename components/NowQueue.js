@@ -17,7 +17,7 @@ const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window"
 const ITEM_WIDTH = viewportWidth * 0.22;
 const ITEM_HEIGHT = ITEM_WIDTH * (1 / 1);
 
-const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle }) => {
+const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refreshKey }) => {
   const [queue, setQueue] = useState([]);
   const { getBaseUrl } = useApi();
   const baseUrl = getBaseUrl();
@@ -34,14 +34,13 @@ const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle }) => {
     }
   }, [baseUrl]);
 
-  // Initial fetch when component becomes active
   useEffect(() => {
-    if (isActive) {
+    if (isActive || refreshKey) { 
       fetchQueue();
+      console.log("called");
     }
-  }, [isActive, fetchQueue]);
+  }, [isActive, fetchQueue, refreshKey]);
 
-  // Handle scrolling to current track only when currentVideoId changes
   useEffect(() => {
     if (isActive && currentVideoId && queue.length > 0) {
       const index = queue.findIndex(

@@ -5,7 +5,6 @@ import {
   Text,
   PanResponder,
   Animated,
-  TouchableWithoutFeedback,
 } from "react-native";
 
 export default function ProgressBar({
@@ -28,13 +27,11 @@ export default function ProgressBar({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Recalculate progress when elapsed time changes
   useEffect(() => {
     if (seekPosition === null) {
       const newProgress = (elapsed / duration) * 100;
       setLocalProgress(newProgress);
 
-      // Animate thumb to new position
       Animated.spring(thumbPosition, {
         toValue: (newProgress / 100) * (barWidth || 0),
         useNativeDriver: false,
@@ -44,7 +41,6 @@ export default function ProgressBar({
   }, [elapsed, duration, barWidth]);
 
   const calculateProgress = (touchX, width) => {
-    // Calculate progress based on touch position relative to bar width
     const progress = (touchX / width) * 100;
     return Math.min(Math.max(progress, 0), 100);
   };
@@ -53,7 +49,6 @@ export default function ProgressBar({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
     onPanResponderGrant: (evt) => {
-      // Measure the bar width when touch starts
       if (barRef.current) {
         barRef.current.measure((x, y, width) => {
           setBarWidth(width);
@@ -61,7 +56,6 @@ export default function ProgressBar({
           setSeekPosition(progress);
           setLocalProgress(progress);
 
-          // Animate thumb position
           Animated.spring(thumbPosition, {
             toValue: (progress / 100) * width,
             useNativeDriver: false,
@@ -76,7 +70,6 @@ export default function ProgressBar({
         setSeekPosition(progress);
         setLocalProgress(progress);
 
-        // Animate thumb position during move
         Animated.spring(thumbPosition, {
           toValue: (progress / 100) * barWidth,
           useNativeDriver: false,
@@ -85,7 +78,6 @@ export default function ProgressBar({
       }
     },
     onPanResponderRelease: async (evt) => {
-      // Perform seek when user releases
       if (seekPosition !== null && onSeek && barWidth > 0) {
         const seekSeconds = Math.round((seekPosition / 100) * duration);
         await onSeek(seekSeconds);
@@ -94,13 +86,11 @@ export default function ProgressBar({
     },
   });
 
-  // Determine time to display (either actual elapsed or seek preview)
   const displayTime =
     seekPosition !== null
       ? formatTime((seekPosition / 100) * duration)
       : formatTime(elapsed);
 
-  // Only render seek interaction if baseUrl is provided
   const seekProps = baseUrl ? panResponder.panHandlers : {};
 
   return (

@@ -49,6 +49,7 @@ export default function PlayerScreen() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [activeTab, setActiveTab] = useState(TABS.HOME);
   const [likedTracks, setLikedTracks] = useState({});
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
@@ -186,6 +187,14 @@ export default function PlayerScreen() {
     }
   };
 
+  const handleRefresh = async () => {
+    await fetchSongInfo();
+    if (controlsRef.current) {
+      controlsRef.current.fetchInitialStates();
+    }
+    setRefreshKey(prev => prev + 1);
+  };
+
   const NoConnectionContent = () => (
     <View style={styles.noConnectionContainer}>
       <Text style={styles.noConnectionText}>
@@ -203,12 +212,7 @@ export default function PlayerScreen() {
   return (
     <View style={styles.container}>
       <TopBar
-        onRefresh={() => {
-          fetchSongInfo();
-          if (controlsRef.current) {
-            controlsRef.current.fetchInitialStates();
-          }
-        }}
+        onRefresh={handleRefresh}
         onCollapse={() => setIsCollapsed(true)}
         isCollapsed={isCollapsed}
         activeTab={activeTab}
@@ -314,6 +318,7 @@ export default function PlayerScreen() {
                   isActive={activeTab === TABS.NOWPLAYING}
                   likedTracks={likedTracks}
                   onLikeToggle={updateTrackLikeStatus}
+                  refreshKey={refreshKey}
                 />
               )}
             </View>
