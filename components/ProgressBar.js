@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    left: -8, // Offset to center the thumb
+    left: -8,
   },
   time: {
     color: "#D3D3D3",

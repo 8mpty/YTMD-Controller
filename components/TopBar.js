@@ -8,6 +8,7 @@ import SettingsModal from "./SettingsModal";
 import DatabaseModal from "./DatabaseModal";
 import { clearDatabase } from "../services/DatabaseService";
 import VideoInformationModal from "./VideoInformationModal";
+import AppInfoModal from "./AppInfoModal";
 
 const TABS = {
   HOME: "home",
@@ -15,13 +16,20 @@ const TABS = {
   LIBRARY: "library",
 };
 
-export default function TopBar({ onRefresh, onCollapse, isCollapsed,setActiveTab, activeTab}) {
+export default function TopBar({
+  onRefresh,
+  onCollapse,
+  isCollapsed,
+  setActiveTab,
+  activeTab,
+}) {
   const navigation = useNavigation();
   const { clearApiConfig } = useApi();
   const insets = useSafeAreaInsets();
   const [showSettings, setShowSettings] = useState(false);
   const [showDatabase, setShowDatabase] = useState(false);
   const [showVideoInfo, setShowVideoInfo] = useState(false);
+  const [showAppInfo, setShowAppInfo] = useState(false);
 
   const handleConfigureIP = async () => {
     setShowSettings(false);
@@ -164,13 +172,21 @@ export default function TopBar({ onRefresh, onCollapse, isCollapsed,setActiveTab
           setShowSettings(false);
           setShowDatabase(true);
         }}
-        onViewAppInfo={() => {}}
+        onViewAppInfo={() => {
+          setShowSettings(false);
+          setShowAppInfo(true);
+        }}
       />
 
       <DatabaseModal
         visible={showDatabase}
         onClose={() => setShowDatabase(false)}
         onClearDatabase={handleClearDatabase}
+      />
+
+      <AppInfoModal
+        visible={showAppInfo}
+        onClose={() => setShowAppInfo(false)}
       />
     </View>
   );
