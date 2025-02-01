@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: "30%",
     backgroundColor: "rgba(0, 0, 0, 0.9)",
     zIndex: 1,
-    marginRight: 40
+    // marginRight: 40
   },
   scrollView: {
     flex: 1,
