@@ -20,7 +20,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.x8mpty.ytmdcontroller"
+      "package": "com.x8mpty.ytmdcontroller",
+      "networkSecurityConfig": {
+        "allowHttp": true
+      },
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
