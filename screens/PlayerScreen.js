@@ -168,25 +168,6 @@ export default function PlayerScreen() {
     }
   };
 
-  const handleSeek = async (seconds) => {
-    if (!baseUrl) return;
-    try {
-      const response = await fetch(`${baseUrl}/api/v1/seek-to`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ seconds }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error seeking in track:", error);
-    }
-  };
-
   const handleRefresh = async () => {
     await fetchSongInfo();
     if (controlsRef.current) {
@@ -284,8 +265,6 @@ export default function PlayerScreen() {
                   <ProgressBar
                     elapsed={songInfo.elapsedSeconds}
                     duration={songInfo.songDuration}
-                    baseUrl={baseUrl}
-                    onSeek={handleSeek}
                   />
                   <Controls
                     ref={controlsRef}
@@ -347,8 +326,6 @@ export default function PlayerScreen() {
           onPrevious={handlePrevious}
           onNext={handleNext}
           onPlayPause={handlePlayPause}
-          baseUrl={baseUrl}
-          onSeek={handleSeek}
         />
       )}
     </View>

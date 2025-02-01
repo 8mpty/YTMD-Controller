@@ -12,8 +12,6 @@ export default function BottomBar({
   onPrevious,
   onNext,
   onPlayPause,
-  baseUrl,
-  onSeek,
 }) {
   const insets = useSafeAreaInsets();
 
@@ -32,8 +30,6 @@ export default function BottomBar({
         elapsed={songInfo.elapsedSeconds}
         duration={songInfo.songDuration}
         widthPercentage={95}
-        baseUrl={baseUrl}
-        onSeek={onSeek}
       />
 
       <View style={styles.content}>
