@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useApi } from "../context/ApiContext";
@@ -12,6 +12,7 @@ import AppInfoModal from "./AppInfoModal";
 
 const TABS = {
   HOME: "home",
+  SEARCH: "search",
   NOWPLAYING: "nowplaying",
   LIBRARY: "library",
 };
@@ -22,6 +23,7 @@ export default function TopBar({
   isCollapsed,
   setActiveTab,
   activeTab,
+  setDimensions,
 }) {
   const navigation = useNavigation();
   const { clearApiConfig } = useApi();
@@ -43,6 +45,15 @@ export default function TopBar({
     } catch (error) {
       console.error("Error clearing database:", error);
     }
+  };
+
+  const handleRefresh = () => {
+    const newDimensions = {
+      width: Dimensions.get("window").width,
+      height: Dimensions.get("window").height,
+    };
+    setDimensions(newDimensions);
+    onRefresh();
   };
 
   return (
@@ -77,6 +88,35 @@ export default function TopBar({
           {isCollapsed && activeTab === TABS.HOME && (
             <>
               <Text style={styles.tabText}>Home</Text>
+              <View style={styles.underline} />
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => {
+            setActiveTab(TABS.SEARCH);
+            onCollapse();
+          }}
+          style={[
+            styles.tabButton,
+            isCollapsed &&
+              activeTab === TABS.SEARCH &&
+              styles.activeTabContainer,
+          ]}
+        >
+          <Ionicons
+            name={
+              isCollapsed && activeTab === TABS.SEARCH
+                ? "search"
+                : "search-outline"
+            }
+            size={24}
+            color="white"
+          />
+          {isCollapsed && activeTab === TABS.SEARCH && (
+            <>
+              <Text style={styles.tabText}>Search</Text>
               <View style={styles.underline} />
             </>
           )}
@@ -148,7 +188,7 @@ export default function TopBar({
         >
           <Ionicons name="bug-outline" size={24} color="white" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onRefresh} style={styles.button}>
+        <TouchableOpacity onPress={handleRefresh} style={styles.button}>
           <Ionicons name="refresh-outline" size={24} color="white" />
         </TouchableOpacity>
         <TouchableOpacity

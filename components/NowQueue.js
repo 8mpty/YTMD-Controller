@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, memo } from "react";
 import {
   View,
   Text,
@@ -13,55 +13,17 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
 
-const { width: viewportWidth, height: viewportHeight } = Dimensions.get("window");
-const ITEM_WIDTH = viewportWidth * 0.22;
-const ITEM_HEIGHT = ITEM_WIDTH * (1.05 / 1.18);
-
-const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refreshKey }) => {
-  const [queue, setQueue] = useState([]);
-  const { getBaseUrl } = useApi();
-  const baseUrl = getBaseUrl();
-  const flatListRef = useRef(null);
-  const scrollViewRef = useRef(null);
-
-  const fetchQueue = useCallback(async () => {
-    try {
-      const response = await fetch(`${baseUrl}/api/v1/queue`);
-      const data = await response.json();
-      setQueue(data.items);
-    } catch (error) {
-      console.error("Error fetching queue:", error);
-    }
-  }, [baseUrl]);
-
-  useEffect(() => {
-    if (isActive || refreshKey) { 
-      fetchQueue();
-    }
-  }, [isActive, fetchQueue, refreshKey]);
-
-  useEffect(() => {
-    if (isActive && currentVideoId && queue.length > 0) {
-      const index = queue.findIndex(
-        (item) => item.playlistPanelVideoRenderer.videoId === currentVideoId
-      );
-
-      if (index !== -1) {
-        if (Platform.OS === "web" && scrollViewRef.current) {
-          const scrollPosition = index * (ITEM_WIDTH + viewportWidth * 0.05);
-          scrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
-        } else if (flatListRef.current) {
-          flatListRef.current.scrollToIndex({
-            index,
-            animated: true,
-            viewPosition: 0,
-          });
-        }
-      }
-    }
-  }, [currentVideoId, queue, isActive]);
-
-  const renderItem = ({ item, index }) => {
+// Separate QueueItem component with memo
+const QueueItem = memo(
+  ({
+    item,
+    currentVideoId,
+    likedTracks,
+    onLikeToggle,
+    itemWidth,
+    itemHeight,
+    styles,
+  }) => {
     const videoId = item.playlistPanelVideoRenderer.videoId;
     const isCurrentTrack = videoId === currentVideoId;
     const isLiked = likedTracks[videoId] || false;
@@ -103,7 +65,209 @@ const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refresh
         </View>
       </View>
     );
-  };
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.currentVideoId === nextProps.currentVideoId &&
+      prevProps.likedTracks[
+        prevProps.item.playlistPanelVideoRenderer.videoId
+      ] ===
+        nextProps.likedTracks[
+          nextProps.item.playlistPanelVideoRenderer.videoId
+        ] &&
+      prevProps.item.playlistPanelVideoRenderer.videoId ===
+        nextProps.item.playlistPanelVideoRenderer.videoId
+    );
+  }
+);
+
+const NowQueue = ({
+  currentVideoId,
+  isActive,
+  likedTracks,
+  onLikeToggle,
+  refreshKey,
+  dimensions,
+}) => {
+  const [queue, setQueue] = useState([]);
+  const { getBaseUrl } = useApi();
+  const baseUrl = getBaseUrl();
+  const flatListRef = useRef(null);
+  const scrollViewRef = useRef(null);
+
+  const ITEM_WIDTH = dimensions.width * 0.2;
+  const ITEM_HEIGHT = ITEM_WIDTH * 1;
+
+  const getStyles = (itemWidth, itemHeight) =>
+    StyleSheet.create({
+      container: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000",
+        width: "100%",
+      },
+      webCarouselContainer: {
+        width: "100%",
+        overflow: "hidden",
+      },
+      webScrollView: {
+        width: "100%",
+      },
+      webItemWrapper: {
+        width: itemWidth + dimensions.width * 0.05,
+      },
+      carousel: {
+        paddingHorizontal: dimensions.width * 0.05,
+        justifyContent: "center",
+        alignItems: "center",
+      },
+      queueItem: {
+        alignItems: "center",
+        marginHorizontal: dimensions.width * 0.025,
+        marginBottom: 135,
+      },
+      itemContainer: {
+        width: itemWidth,
+        height: itemHeight,
+        borderWidth: 0,
+        borderColor: "#fff",
+        borderRadius: 8,
+        overflow: "hidden",
+      },
+      likeButton: {
+        position: "absolute",
+        top: 10,
+        right: 10,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        borderRadius: 20,
+        width: 36,
+        height: 36,
+        justifyContent: "center",
+        alignItems: "center",
+      },
+      currentTrackContainer: {
+        borderColor: "#ff2c86",
+        borderWidth: 4,
+      },
+      thumbnail: {
+        width: "100%",
+        height: "100%",
+      },
+      trackInfo: {
+        marginTop: dimensions.height * 0.01,
+        alignItems: "center",
+      },
+      title: {
+        color: "#fff",
+        fontSize: dimensions.width * 0.016,
+        fontWeight: "bold",
+        textAlign: "center",
+        flexWrap: "wrap",
+        maxWidth: itemWidth,
+      },
+      currentTrackTitle: {
+        color: "#ff2c86",
+      },
+    });
+
+  const styles = getStyles(ITEM_WIDTH, ITEM_HEIGHT);
+
+  const fetchQueue = useCallback(async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/v1/queue`);
+      const data = await response.json();
+
+      setQueue((prevQueue) => {
+        const newItems = data.items;
+
+        const existingItemsMap = new Map(
+          prevQueue.map((item) => [
+            item.playlistPanelVideoRenderer.videoId,
+            item,
+          ])
+        );
+
+        const updatedItems = newItems.map((newItem) => {
+          const videoId = newItem.playlistPanelVideoRenderer.videoId;
+          const existingItem = existingItemsMap.get(videoId);
+
+          if (
+            existingItem &&
+            existingItem.playlistPanelVideoRenderer.title.runs[0].text ===
+              newItem.playlistPanelVideoRenderer.title.runs[0].text
+          ) {
+            return existingItem;
+          }
+
+          return newItem;
+        });
+
+        return updatedItems;
+      });
+    } catch (error) {
+      console.error("Error fetching queue:", error);
+    }
+  }, [baseUrl]);
+
+  useEffect(() => {
+    if (isActive || refreshKey) {
+      fetchQueue();
+    }
+  }, [isActive, fetchQueue, refreshKey]);
+
+  useEffect(() => {
+    if (isActive && currentVideoId && queue.length > 0) {
+      const index = queue.findIndex(
+        (item) => item.playlistPanelVideoRenderer.videoId === currentVideoId
+      );
+
+      if (index !== -1) {
+        if (Platform.OS === "web" && scrollViewRef.current) {
+          const scrollPosition = index * (ITEM_WIDTH + dimensions.width * 0.05);
+          scrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
+        } else if (flatListRef.current) {
+          flatListRef.current.scrollToIndex({
+            index,
+            animated: true,
+            viewPosition: 0,
+            viewOffset: dimensions.width * 0.05,
+          });
+        }
+      }
+    }
+  }, [currentVideoId, queue, isActive, ITEM_WIDTH, dimensions.width]);
+
+  const renderItem = useCallback(
+    ({ item }) => (
+      <QueueItem
+        item={item}
+        currentVideoId={currentVideoId}
+        likedTracks={likedTracks}
+        onLikeToggle={onLikeToggle}
+        itemWidth={ITEM_WIDTH}
+        itemHeight={ITEM_HEIGHT}
+        styles={styles}
+      />
+    ),
+    [currentVideoId, likedTracks, onLikeToggle, ITEM_WIDTH, ITEM_HEIGHT, styles]
+  );
+
+  const keyExtractor = useCallback(
+    (item) =>
+      item.playlistPanelVideoRenderer.videoId ||
+      Math.random().toString(36).substring(7),
+    []
+  );
+
+  const getItemLayout = useCallback(
+    (data, index) => ({
+      length: ITEM_WIDTH + dimensions.width * 0.05,
+      offset: (ITEM_WIDTH + dimensions.width * 0.05) * index,
+      index,
+    }),
+    [ITEM_WIDTH, dimensions.width]
+  );
 
   return (
     <View style={styles.container}>
@@ -123,7 +287,7 @@ const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refresh
                 key={item.playlistPanelVideoRenderer.videoId || index}
                 style={styles.webItemWrapper}
               >
-                {renderItem({ item, index })}
+                {renderItem({ item })}
               </View>
             ))}
           </ScrollView>
@@ -133,96 +297,21 @@ const NowQueue = ({ currentVideoId, isActive, likedTracks, onLikeToggle, refresh
           ref={flatListRef}
           data={queue}
           renderItem={renderItem}
-          keyExtractor={(item) =>
-            item.playlistPanelVideoRenderer.videoId ||
-            Math.random().toString(36).substring(7)
-          }
+          keyExtractor={keyExtractor}
           horizontal
           showsHorizontalScrollIndicator={false}
           snapToAlignment="center"
           decelerationRate="fast"
           contentContainerStyle={styles.carousel}
-          getItemLayout={(data, index) => ({
-            length: ITEM_WIDTH + viewportWidth * 0.05,
-            offset: (ITEM_WIDTH + viewportWidth * 0.05) * index,
-            index,
-          })}
+          getItemLayout={getItemLayout}
+          removeClippedSubviews={true}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={5}
         />
       )}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#000",
-    width: "100%",
-  },
-  webCarouselContainer: {
-    width: "100%",
-    overflow: "hidden",
-  },
-  webScrollView: {
-    width: "100%",
-  },
-  webItemWrapper: {
-    width: ITEM_WIDTH + viewportWidth * 0.05,
-  },
-  carousel: {
-    paddingHorizontal: viewportWidth * 0.05,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  queueItem: {
-    alignItems: "center",
-    marginHorizontal: viewportWidth * 0.025,
-    marginBottom: 135,
-  },
-  itemContainer: {
-    width: ITEM_WIDTH,
-    height: ITEM_HEIGHT,
-    borderWidth: 0,
-    borderColor: "#fff",
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  likeButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 20,
-    width: 36,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  currentTrackContainer: {
-    borderColor: "#ff2c86",
-    borderWidth: 4,
-  },
-  thumbnail: {
-    width: "100%",
-    height: "100%",
-  },
-  trackInfo: {
-    marginTop: viewportHeight * 0.01,
-    alignItems: "center",
-  },
-  title: {
-    color: "#fff",
-    fontSize: viewportWidth * 0.016,
-    fontWeight: "bold",
-    textAlign: "center",
-    flexWrap: "wrap",
-    maxWidth: ITEM_WIDTH,
-  },
-  currentTrackTitle: {
-    color: "#ff2c86",
-  },
-});
-
-export default NowQueue;
+export default memo(NowQueue);

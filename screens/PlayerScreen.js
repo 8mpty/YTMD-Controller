@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   useWindowDimensions,
+  Dimensions
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,6 +27,7 @@ import {
 
 const TABS = {
   HOME: "home",
+  SEARCH: "search",
   NOWPLAYING: "nowplaying",
   LIBRARY: "library",
 };
@@ -50,6 +52,11 @@ export default function PlayerScreen() {
   const [activeTab, setActiveTab] = useState(TABS.HOME);
   const [likedTracks, setLikedTracks] = useState({});
   const [refreshKey, setRefreshKey] = useState(0)
+  const [dimensions, setDimensions] = useState({
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height
+  });
+
 
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
@@ -186,7 +193,6 @@ export default function PlayerScreen() {
         },
         body: JSON.stringify({ seconds }),
       });
-      // Update will happen automatically through the polling mechanism
     } catch (error) {
       console.error('Error seeking:', error);
     }
@@ -214,6 +220,7 @@ export default function PlayerScreen() {
         isCollapsed={isCollapsed}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        setDimensions={setDimensions}
       />
       {!isCollapsed ? (
         <View
@@ -304,6 +311,12 @@ export default function PlayerScreen() {
             </View>
           )}
 
+          {activeTab === TABS.SEARCH && (
+            <View style={styles.placeholderContent}>
+              <Text style={styles.placeholderText}>COMING SOON</Text>
+            </View>
+          )}
+
           {activeTab === TABS.NOWPLAYING && (
             <View style={styles.placeholderContent}>
               {!baseUrl ? (
@@ -315,6 +328,7 @@ export default function PlayerScreen() {
                   likedTracks={likedTracks}
                   onLikeToggle={updateTrackLikeStatus}
                   refreshKey={refreshKey}
+                  dimensions={dimensions}
                 />
               )}
             </View>

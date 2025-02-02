@@ -3,7 +3,7 @@
     "name": "YTMD-Controller",
     "slug": "ytmd-controller",
     "version": "1.0.0",
-    "orientation": "default",
+    "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -13,7 +13,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "orientationLock": "landscape"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +29,8 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ]
+      ],
+      "orientation": "landscape"
     },
     "web": {
       "favicon": "./assets/favicon.png"
