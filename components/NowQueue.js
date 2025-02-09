@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
+import createApiService from "../services/apiService";
 
 // Separate QueueItem component with memo
 const QueueItem = memo(
@@ -94,6 +95,7 @@ const NowQueue = ({
   const baseUrl = getBaseUrl();
   const flatListRef = useRef(null);
   const scrollViewRef = useRef(null);
+  const api = createApiService(baseUrl);
 
   const ITEM_WIDTH = dimensions.width * 0.2;
   const ITEM_HEIGHT = ITEM_WIDTH * 1;
@@ -175,8 +177,7 @@ const NowQueue = ({
 
   const fetchQueue = useCallback(async () => {
     try {
-      const response = await fetch(`${baseUrl}/api/v1/queue`);
-      const data = await response.json();
+      const data = await api.getQueue();
 
       setQueue((prevQueue) => {
         const newItems = data.items;

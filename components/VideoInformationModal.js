@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
 import * as Clipboard from "expo-clipboard";
+import createApiService from "../services/apiService";
 
 const InfoText = ({ label, text, onCopy }) => {
   if (!text) return null;
@@ -44,14 +45,11 @@ export default function VideoInformationModal({ visible, onClose }) {
 
   const fetchVideoInfo = async () => {
     const baseUrl = getBaseUrl();
+    const api = createApiService(baseUrl);
     if (!baseUrl) return;
 
     try {
-      const response = await fetch(`${baseUrl}/api/v1/song`);
-      if (!response.ok) throw new Error("Failed to fetch video data");
-
-      const data = await response.json();
-
+      const data = await api.getSongInfo();
       const minutes = Math.floor(data.songDuration / 60);
       const seconds = String(data.songDuration % 60).padStart(2, "0");
 

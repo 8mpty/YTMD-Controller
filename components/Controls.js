@@ -7,6 +7,7 @@ import React, {
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import VolumeDialog from "./VolumeDialog";
+import createApiService from "../services/apiService";
 
 const Controls = forwardRef(
   ({ isPaused, baseUrl, onLyricsToggle, showLyrics }, ref) => {
@@ -14,23 +15,22 @@ const Controls = forwardRef(
     const [isShuffled, setIsShuffled] = useState(false);
     const [volume, setVolume] = useState(50);
     const [showVolumeDialog, setShowVolumeDialog] = useState(false);
+    const api = createApiService(baseUrl);
 
     const fetchStates = async () => {
       try {
         // Fetch repeat mode
-        const repeatResponse = await fetch(`${baseUrl}/api/v1/repeat-mode`);
-        const repeatData = await repeatResponse.json();
-        setRepeatMode(repeatData.mode);
+        const repeatResponse = await api.getRepeatMode();
+        setRepeatMode(repeatResponse.mode);
 
         // Fetch shuffle state
-        const shuffleResponse = await fetch(`${baseUrl}/api/v1/shuffle`);
-        const shuffleData = await shuffleResponse.json();
-        setIsShuffled(shuffleData.state);
+        const shuffleResponse = await api.getShuffle();
+        setIsShuffled(shuffleResponse.state);
 
         // Fetch initial volume state
-        const volumeResponse = await fetch(`${baseUrl}/api/v1/volume`);
-        const volumeData = await volumeResponse.json();
-        setVolume(volumeData.state);
+        const volumeResponse = await api.getVolume();
+        setVolume(volumeResponse.state);
+
       } catch (error) {
         console.error("Error fetching states:", error);
       }
@@ -38,9 +38,8 @@ const Controls = forwardRef(
 
     const fetchVolumeState = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/v1/volume`);
-        const data = await response.json();
-        setVolume(data.state);
+        const response = await api.getVolume();
+        setVolume(response.state);
       } catch (error) {
         console.error("Error fetching volume state:", error);
       }
@@ -61,13 +60,7 @@ const Controls = forwardRef(
 
     const handleRepeatToggle = async () => {
       try {
-        await fetch(`${baseUrl}/api/v1/switch-repeat`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ iteration: 1 }),
-        });
+        await api.switchRepeat(1);
         await fetchStates();
       } catch (error) {
         console.error("Error toggling repeat:", error);
@@ -76,9 +69,7 @@ const Controls = forwardRef(
 
     const handleShuffle = async () => {
       try {
-        await fetch(`${baseUrl}/api/v1/shuffle`, {
-          method: "POST",
-        });
+        await api.toggleShuffle();
         await fetchStates();
       } catch (error) {
         console.error("Error toggling shuffle:", error);

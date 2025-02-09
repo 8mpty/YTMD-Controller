@@ -15,7 +15,14 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
-      "orientationLock": "landscape"
+      "orientationLock": "landscape",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        },
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.x8mpty.ytmdcontroller"
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +31,8 @@
       },
       "package": "com.x8mpty.ytmdcontroller",
       "networkSecurityConfig": {
-        "allowHttp": true
+        "allowHttp": true,
+        "cleartextTrafficPermitted": true
       },
       "permissions": [
         "INTERNET",

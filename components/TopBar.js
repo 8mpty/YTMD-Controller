@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  TextInput,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useApi } from "../context/ApiContext";
@@ -32,6 +39,7 @@ export default function TopBar({
   const [showDatabase, setShowDatabase] = useState(false);
   const [showVideoInfo, setShowVideoInfo] = useState(false);
   const [showAppInfo, setShowAppInfo] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleConfigureIP = async () => {
     setShowSettings(false);
@@ -116,7 +124,26 @@ export default function TopBar({
           />
           {isCollapsed && activeTab === TABS.SEARCH && (
             <>
-              <Text style={styles.tabText}>Search</Text>
+              <View style={styles.searchContainer}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholderTextColor="#999"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoFocus
+                  multiline={false}
+                  numberOfLines={1}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    style={styles.clearButton}
+                    onPress={() => setSearchQuery("")}
+                  >
+                    <Ionicons name="close-circle" size={16} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
               <View style={styles.underline} />
             </>
           )}
@@ -268,6 +295,24 @@ const styles = StyleSheet.create({
   tabText: {
     color: "white",
     fontSize: 14,
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+    width: 140, // Fixed width
+  },
+  searchInput: {
+    color: "white",
+    fontSize: 14,
+    width: 140, // Match container width
+    paddingVertical: 4,
+    paddingRight: 24,
+  },
+  clearButton: {
+    position: "absolute",
+    right: 0,
+    padding: 4,
   },
   underline: {
     position: "absolute",

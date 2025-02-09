@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Modal, TouchableOpacity } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
+import createApiService from "../services/apiService";
 
 export default function VolumeDialog({
   initialVolume,
@@ -10,6 +11,7 @@ export default function VolumeDialog({
   onClose,
 }) {
   const [volume, setVolume] = useState(initialVolume);
+  const api = createApiService(baseUrl);
 
   useEffect(() => {
     setVolume(initialVolume);
@@ -21,13 +23,7 @@ export default function VolumeDialog({
 
   const handleSlidingComplete = async (finalVolume) => {
     try {
-      await fetch(`${baseUrl}/api/v1/volume`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ volume: Math.round(finalVolume) }),
-      });
+      await api.setVolume(finalVolume);
     } catch (error) {
       console.error("Error setting volume:", error);
     }

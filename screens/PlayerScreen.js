@@ -19,6 +19,7 @@ import Clock from "../components/DisplayClock";
 import NowQueue from "../components/NowQueue";
 import { useApi } from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
+import createApiService from "../services/apiService";
 import {
   initDatabase,
   getLikeStatus,
@@ -56,10 +57,11 @@ export default function PlayerScreen() {
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height
   });
-
+  
 
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
+  const api = createApiService(baseUrl);
   const insets = useSafeAreaInsets();
   const controlsRef = React.useRef();
 
@@ -110,11 +112,7 @@ export default function PlayerScreen() {
     }
 
     try {
-      const response = await fetch(`${baseUrl}/api/v1/song`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await api.getSongInfo();
       if (songInfo?.videoId !== data.videoId) {
         await fetchLikeStatus(data.videoId);
       }
@@ -151,7 +149,7 @@ export default function PlayerScreen() {
   const handlePlayPause = async () => {
     if (!baseUrl) return;
     try {
-      await fetch(`${baseUrl}/api/v1/toggle-play`, { method: "POST" });
+      await api.togglePlay();
     } catch (error) {
       console.error("Error toggling play/pause:", error);
     }
@@ -160,7 +158,7 @@ export default function PlayerScreen() {
   const handlePrevious = async () => {
     if (!baseUrl) return;
     try {
-      await fetch(`${baseUrl}/api/v1/previous`, { method: "POST" });
+      await api.previousSong();
     } catch (error) {
       console.error("Error going to previous track:", error);
     }
@@ -169,7 +167,7 @@ export default function PlayerScreen() {
   const handleNext = async () => {
     if (!baseUrl) return;
     try {
-      await fetch(`${baseUrl}/api/v1/next`, { method: "POST" });
+      await api.nextSong();
     } catch (error) {
       console.error("Error going to next track:", error);
     }
@@ -186,13 +184,7 @@ export default function PlayerScreen() {
   const handleSeek = async (seconds) => {
     if (!baseUrl) return;
     try {
-      await fetch(`${baseUrl}/api/v1/seek-to`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ seconds }),
-      });
+      await api.seekTo(seconds);
     } catch (error) {
       console.error('Error seeking:', error);
     }
