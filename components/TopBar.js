@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     position: "relative",
-    width: 140, // Fixed width
+    width: 140,
   },
   searchInput: {
     color: "white",
     fontSize: 14,
-    width: 140, // Match container width
+    width: 140,
     paddingVertical: 4,
     paddingRight: 24,
   },

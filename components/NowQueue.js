@@ -18,9 +18,11 @@ import createApiService from "../services/apiService";
 const QueueItem = memo(
   ({
     item,
+    index,
     currentVideoId,
     likedTracks,
     onLikeToggle,
+    onTrackSelect,
     itemWidth,
     itemHeight,
     styles,
@@ -34,7 +36,8 @@ const QueueItem = memo(
 
     return (
       <View style={styles.queueItem}>
-        <View
+        <TouchableOpacity
+          onPress={() => onTrackSelect(index)}
           style={[
             styles.itemContainer,
             isCurrentTrack && styles.currentTrackContainer,
@@ -55,7 +58,7 @@ const QueueItem = memo(
               color={isLiked ? "#ff4545" : "#fff"}
             />
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
         <View style={styles.trackInfo}>
           <Text
             style={[styles.title, isCurrentTrack && styles.currentTrackTitle]}
@@ -175,6 +178,17 @@ const NowQueue = ({
 
   const styles = getStyles(ITEM_WIDTH, ITEM_HEIGHT);
 
+  const handleTrackSelect = useCallback(
+    async (index) => {
+      try {
+        await api.changeActiveSongInQueue(index);
+      } catch (error) {
+        console.error("Error changing active song:", error);
+      }
+    },
+    [api]
+  );
+
   const fetchQueue = useCallback(async () => {
     try {
       const data = await api.getQueue();
@@ -240,18 +254,28 @@ const NowQueue = ({
   }, [currentVideoId, queue, isActive, ITEM_WIDTH, dimensions.width]);
 
   const renderItem = useCallback(
-    ({ item }) => (
+    ({ item, index }) => (
       <QueueItem
         item={item}
+        index={index}
         currentVideoId={currentVideoId}
         likedTracks={likedTracks}
         onLikeToggle={onLikeToggle}
+        onTrackSelect={handleTrackSelect}
         itemWidth={ITEM_WIDTH}
         itemHeight={ITEM_HEIGHT}
         styles={styles}
       />
     ),
-    [currentVideoId, likedTracks, onLikeToggle, ITEM_WIDTH, ITEM_HEIGHT, styles]
+    [
+      currentVideoId,
+      likedTracks,
+      onLikeToggle,
+      handleTrackSelect,
+      ITEM_WIDTH,
+      ITEM_HEIGHT,
+      styles,
+    ]
   );
 
   const keyExtractor = useCallback(
@@ -288,7 +312,7 @@ const NowQueue = ({
                 key={item.playlistPanelVideoRenderer.videoId || index}
                 style={styles.webItemWrapper}
               >
-                {renderItem({ item })}
+                {renderItem({ item, index })}
               </View>
             ))}
           </ScrollView>

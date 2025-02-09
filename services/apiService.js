@@ -18,14 +18,15 @@ class ApiService {
   async post(endpoint, data = {}, expectJson = true) {
     try {
       const response = await fetch(`${this.baseUrl}/api/v1${endpoint}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+
       if (expectJson) {
         return await response.json();
       }
@@ -36,7 +37,7 @@ class ApiService {
     }
   }
 
-  async patch(endpoint, data = {}) {
+  async patch(endpoint, data = {}, expectJson = true) {
     try {
       const response = await fetch(`${this.baseUrl}/api/v1${endpoint}`, {
         method: "PATCH",
@@ -47,7 +48,11 @@ class ApiService {
       });
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
+
+      if (expectJson) {
+        return await response.json();
+      }
+      return true;
     } catch (error) {
       console.error(`PATCH request failed for ${endpoint}:`, error);
       throw error;
@@ -70,33 +75,33 @@ class ApiService {
 }
 
 export const createApiService = (baseUrl) => {
-    const api = new ApiService(baseUrl);
-  
-    return {
-      // Song controls
-      getSongInfo: () => api.get('/song', {}, false),
-      togglePlay: () => api.post('/toggle-play', {}, false),
-      previousSong: () => api.post('/previous', {}, false),
-      nextSong: () => api.post('/next', {}, false),
-      seekTo: (seconds) => api.post('/seek-to', { seconds }, false),
-      
-      // Volume controls
-      getVolume: () => api.get('/volume'),
-      setVolume: (volume) => api.post('/volume', { volume: Math.round(volume) }),
-      
-      // Queue management
-      getQueue: () => api.get('/queue'),
-      addSongToQueue: (videoId) => api.post('/queue', { videoId }),
-      changeActiveSongInQueue: (index) => api.patch('/queue', { index }),
-      moveSongInQueue: (fromIndex, toIndex) => api.patch(`/queue/${fromIndex}`, { toIndex }),
-      removeSongFromQueue: (index) => api.delete(`/queue/${index}`),
-      
-      // Playback settings
-      getRepeatMode: () => api.get('/repeat-mode'),
-      switchRepeat: (iteration = 1) => api.post('/switch-repeat', { iteration }, false),
-      getShuffle: () => api.get('/shuffle', {}, false),
-      toggleShuffle: () => api.post('/shuffle', {}, false),
-    };
+  const api = new ApiService(baseUrl);
+
+  return {
+    // Song controls
+    getSongInfo: () => api.get("/song", {}, false),
+    togglePlay: () => api.post("/toggle-play", {}, false),
+    previousSong: () => api.post("/previous", {}, false),
+    nextSong: () => api.post("/next", {}, false),
+    seekTo: (seconds) => api.post("/seek-to", { seconds }, false),
+
+    // Volume controls
+    getVolume: () => api.get("/volume"),
+    setVolume: (volume) => api.post("/volume", { volume: Math.round(volume) }),
+
+    // Queue
+    getQueue: () => api.get("/queue"),
+    addSongToQueue: (videoId) => api.post("/queue", { videoId }),
+    changeActiveSongInQueue: (index) => api.patch('/queue', { index: parseInt(index) }, false),
+    moveSongInQueue: (fromIndex, toIndex) => api.patch(`/queue/${fromIndex}`, { toIndex }),
+    removeSongFromQueue: (index) => api.delete(`/queue/${index}`),
+
+    // Playback settings
+    getRepeatMode: () => api.get("/repeat-mode"),
+    switchRepeat: (iteration = 1) => api.post("/switch-repeat", { iteration }, false),
+    getShuffle: () => api.get("/shuffle", {}, false),
+    toggleShuffle: () => api.post("/shuffle", {}, false),
   };
-  
-  export default createApiService;
+};
+
+export default createApiService;
