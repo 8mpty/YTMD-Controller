@@ -221,8 +221,8 @@ export default function PlayerScreen() {
             {
               paddingTop: Math.max(insets.top, 10),
               paddingBottom: Math.max(insets.bottom, 20),
-              paddingLeft: Math.max(insets.left, 20),
-              paddingRight: Math.max(insets.right, showLyrics ? 0 : 20),
+              paddingLeft: Math.max(insets.left, 10),
+              paddingRight: Math.max(insets.right, showLyrics ? 0 : 10),
             },
           ]}
         >

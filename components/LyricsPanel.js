@@ -62,6 +62,7 @@ export default function LyricsPanel({ songInfo, isVisible }) {
         {
           top: insets.top + 10,
           bottom: insets.bottom + 30,
+          paddingRight: Math.max(insets.right),
         },
       ]}
     >
