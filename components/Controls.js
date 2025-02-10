@@ -151,7 +151,7 @@ const Controls = forwardRef(
 
         <TouchableOpacity onPress={onLyricsToggle} style={styles.button}>
           <Ionicons
-            name="search"
+            name="list-outline"
             size={24}
             color={showLyrics ? "#ffffff" : "#666666"}
           />

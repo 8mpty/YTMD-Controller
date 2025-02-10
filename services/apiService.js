@@ -59,14 +59,18 @@ class ApiService {
     }
   }
 
-  async delete(endpoint) {
+  async delete(endpoint, expectJson = false) {
     try {
       const response = await fetch(`${this.baseUrl}/api/v1${endpoint}`, {
         method: "DELETE",
       });
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
+
+      if (expectJson) {
+        return await response.json();
+      }
+      return true;
     } catch (error) {
       console.error(`DELETE request failed for ${endpoint}:`, error);
       throw error;
@@ -87,12 +91,13 @@ export const createApiService = (baseUrl) => {
 
     // Volume controls
     getVolume: () => api.get("/volume"),
-    setVolume: (volume) => api.post("/volume", { volume: Math.round(volume) }),
+    setVolume: (volume) => api.post("/volume", { volume: Math.round(volume) }, false),
 
     // Queue
     getQueue: () => api.get("/queue"),
-    addSongToQueue: (videoId) => api.post("/queue", { videoId }),
-    changeActiveSongInQueue: (index) => api.patch('/queue', { index: parseInt(index) }, false),
+    addSongToQueue: (videoId) => api.post("/queue", { videoId, insertPosition: "INSERT_AT_END" }, false),
+    changeActiveSongInQueue: (index) => api.patch("/queue", { index: parseInt(index) }, false),
+    clearQueue: () => api.delete("/queue"),
     moveSongInQueue: (fromIndex, toIndex) => api.patch(`/queue/${fromIndex}`, { toIndex }),
     removeSongFromQueue: (index) => api.delete(`/queue/${index}`),
 

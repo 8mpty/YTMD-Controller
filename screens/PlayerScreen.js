@@ -20,6 +20,7 @@ import NowQueue from "../components/NowQueue";
 import { useApi } from "../context/ApiContext";
 import { Ionicons } from "@expo/vector-icons";
 import createApiService from "../services/apiService";
+import Library from "../components/Library";
 import {
   initDatabase,
   getLikeStatus,
@@ -58,7 +59,6 @@ export default function PlayerScreen() {
     height: Dimensions.get('window').height
   });
   
-
   const navigation = useNavigation();
   const baseUrl = getBaseUrl();
   const api = createApiService(baseUrl);
@@ -328,7 +328,7 @@ export default function PlayerScreen() {
 
           {activeTab === TABS.LIBRARY && (
             <View style={styles.placeholderContent}>
-              <Text style={styles.placeholderText}>COMING SOON</Text>
+              <Library />
             </View>
           )}
         </>
