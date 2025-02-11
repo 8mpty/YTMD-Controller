@@ -10,10 +10,10 @@ import {
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Controls from "../components/Controls";
-import ProgressBar from "../components/ProgressBar";
-import TopBar from "../components/TopBar";
-import BottomBar from "../components/BottomBar";
+import Controls from "../components/ui/Controls";
+import ProgressBar from "../components/ui/ProgressBar";
+import TopBar from "../components/ui/TopBar";
+import BottomBar from "../components/ui/BottomBar";
 import LyricsPanel from "../components/LyricsPanel";
 import Clock from "../components/DisplayClock";
 import NowQueue from "../components/NowQueue";

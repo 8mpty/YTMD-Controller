@@ -6,8 +6,8 @@ import React, {
 } from "react";
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import VolumeDialog from "./VolumeDialog";
-import createApiService from "../services/apiService";
+import VolumeDialog from "../modals/VolumeModal";
+import createApiService from "../../services/apiService";
 
 const Controls = forwardRef(
   ({ isPaused, baseUrl, onLyricsToggle, showLyrics }, ref) => {
@@ -19,15 +19,12 @@ const Controls = forwardRef(
 
     const fetchStates = async () => {
       try {
-        // Fetch repeat mode
         const repeatResponse = await api.getRepeatMode();
         setRepeatMode(repeatResponse.mode);
 
-        // Fetch shuffle state
         const shuffleResponse = await api.getShuffle();
         setIsShuffled(shuffleResponse.state);
 
-        // Fetch initial volume state
         const volumeResponse = await api.getVolume();
         setVolume(volumeResponse.state);
 

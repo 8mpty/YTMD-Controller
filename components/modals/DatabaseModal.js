@@ -11,7 +11,7 @@ import {
   Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllLikes } from "../services/DatabaseService";
+import { getAllLikes } from "../../services/DatabaseService";
 
 export default function DatabaseModal({ visible, onClose, onClearDatabase }) {
   const [likes, setLikes] = useState([]);

@@ -19,7 +19,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useApi } from "../context/ApiContext";
 import createApiService from "../services/apiService";
-import PlaylistModal from "./PlaylistModal";
+import PlaylistModal from "./modals/PlaylistModal";
 import { getPlaylistsContainingTrack } from "../services/PlayListDatabaseService";
 
 const createQueueItemStyles = (itemWidth, itemHeight, dimensions) =>
@@ -30,8 +30,8 @@ const createQueueItemStyles = (itemWidth, itemHeight, dimensions) =>
       marginBottom: 135,
     },
     itemContainer: {
-      width: itemWidth,
-      height: itemHeight,
+      width: Platform.OS === "ios" ? itemWidth - 25 : itemWidth,
+      height: Platform.OS === "ios" ? itemHeight - 25 : itemHeight,
       borderWidth: 0,
       borderColor: "#fff",
       borderRadius: 8,
@@ -73,7 +73,7 @@ const createQueueItemStyles = (itemWidth, itemHeight, dimensions) =>
     },
     title: {
       color: "#fff",
-      fontSize: dimensions.width * 0.016,
+      fontSize: Platform.OS === "ios" ? dimensions.width * 0.015 : dimensions.width * 0.016,
       fontWeight: "bold",
       textAlign: "center",
       flexWrap: "wrap",
@@ -131,13 +131,15 @@ const QueueItem = memo(
     useEffect(() => {
       const checkPlaylistStatus = async () => {
         try {
-          const containingPlaylists = await getPlaylistsContainingTrack(videoId);
+          const containingPlaylists = await getPlaylistsContainingTrack(
+            videoId
+          );
           setIsInPlaylist(containingPlaylists.length > 0);
         } catch (error) {
           console.error("Error checking playlist status:", error);
         }
       };
-      
+
       checkPlaylistStatus();
     }, [videoId]);
 
@@ -168,10 +170,10 @@ const QueueItem = memo(
             style={styles.addToPlaylist}
             onPress={handlePlaylistAdd}
           >
-            <Ionicons 
-              name={isInPlaylist ? "bookmarks" : "bookmarks-outline"} 
-              size={18} 
-              color="#fff" 
+            <Ionicons
+              name={isInPlaylist ? "bookmarks" : "bookmarks-outline"}
+              size={18}
+              color="#fff"
             />
           </TouchableOpacity>
 
@@ -231,6 +233,7 @@ const NowQueue = memo(
     const baseUrl = getBaseUrl();
     const scrollRef = useRef(null);
     const api = useMemo(() => createApiService(baseUrl), [baseUrl]);
+    const queuePollingInterval = useRef(null);
 
     const ITEM_WIDTH = dimensions.width * 0.2;
     const ITEM_HEIGHT = ITEM_WIDTH;
@@ -264,15 +267,33 @@ const NowQueue = memo(
       [dimensions.width, ITEM_WIDTH]
     );
 
+    const fetchQueue = useCallback(async () => {
+      try {
+        const data = await api.getQueue();
+        const currentSong = await api.getSongInfo();
+
+        setQueue((prevQueue) => {
+          const newQueue = data.items;
+          if (JSON.stringify(prevQueue) !== JSON.stringify(newQueue)) {
+            return newQueue;
+          }
+          return prevQueue;
+        });
+      } catch (error) {
+        console.error("Error fetching queue:", error);
+      }
+    }, [api]);
+
     const handleTrackSelect = useCallback(
       async (index) => {
         try {
           await api.changeActiveSongInQueue(index);
+          fetchQueue();
         } catch (error) {
           console.error("Error changing active song:", error);
         }
       },
-      [api]
+      [api, fetchQueue]
     );
 
     const handlePlaylistAdd = useCallback((track) => {
@@ -280,49 +301,60 @@ const NowQueue = memo(
       setShowPlaylistModal(true);
     }, []);
 
-    const fetchQueue = useCallback(async () => {
-      try {
-        const data = await api.getQueue();
-        setQueue((prevQueue) => {
-          if (JSON.stringify(prevQueue) === JSON.stringify(data.items)) {
-            return prevQueue;
-          }
-          return data.items;
-        });
-      } catch (error) {
-        console.error("Error fetching queue:", error);
-      }
-    }, [api]);
-
     useEffect(() => {
-      if (isActive || refreshKey) {
+      if (isActive) {
         fetchQueue();
-      }
-    }, [isActive, fetchQueue, refreshKey]);
 
-    useEffect(() => {
-      if (isActive && currentVideoId && queue.length > 0) {
-        const index = queue.findIndex(
-          (item) => item.playlistPanelVideoRenderer.videoId === currentVideoId
-        );
+        queuePollingInterval.current = setInterval(fetchQueue, 2000);
 
-        if (index !== -1) {
-          const scrollPosition = index * (ITEM_WIDTH + dimensions.width * 0.05);
-          if (scrollRef.current) {
-            if (Platform.OS === "web") {
-              scrollRef.current.scrollTo({ x: scrollPosition, animated: true });
-            } else {
-              scrollRef.current.scrollToIndex({
-                index,
-                animated: true,
-                viewPosition: 0,
-                viewOffset: dimensions.width * 0.05,
-              });
-            }
+        return () => {
+          if (queuePollingInterval.current) {
+            clearInterval(queuePollingInterval.current);
           }
+        };
+      } else {
+        if (queuePollingInterval.current) {
+          clearInterval(queuePollingInterval.current);
         }
       }
+    }, [isActive, fetchQueue]);
+
+    useEffect(() => {
+      if (refreshKey) {
+        fetchQueue();
+      }
+    }, [refreshKey, fetchQueue]);
+
+    useEffect(() => {
+      if (currentVideoId) {
+        fetchQueue();
+      }
+    }, [currentVideoId, fetchQueue]);
+
+    useEffect(() => {
+      if (!isActive || !currentVideoId || queue.length === 0) return;
+    
+      const index = queue.findIndex(
+        (item) => item.playlistPanelVideoRenderer.videoId === currentVideoId
+      );
+    
+      if (index === -1 || !scrollRef.current) return;
+    
+      const scrollPosition = index * (ITEM_WIDTH + dimensions.width * 0.05);
+      const viewOffset = Platform.OS === "ios" ? dimensions.width * 0.6 : dimensions.width * 0.05;
+    
+      if (Platform.OS === "web") {
+        scrollRef.current.scrollTo({ x: scrollPosition, animated: true });
+      } else {
+        scrollRef.current.scrollToIndex({
+          index,
+          animated: true,
+          viewPosition: 0,
+          viewOffset,
+        });
+      }
     }, [currentVideoId, queue, isActive, ITEM_WIDTH, dimensions.width]);
+    
 
     const renderItem = useCallback(
       ({ item, index }) => (

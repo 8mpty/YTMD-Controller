@@ -9,13 +9,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useApi } from "../context/ApiContext";
+import { useApi } from "../../context/ApiContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import SettingsModal from "./SettingsModal";
-import DatabaseModal from "./DatabaseModal";
-import { clearDatabase } from "../services/DatabaseService";
-import VideoInformationModal from "./VideoInformationModal";
-import AppInfoModal from "./AppInfoModal";
+import SettingsModal from "../modals/SettingsModal";
+import DatabaseModal from "../modals/DatabaseModal";
+import { clearDatabase } from "../../services/DatabaseService";
+import VideoInformationModal from "../modals/VideoInformationModal";
+import AppInfoModal from "../modals/AppInfoModal";
 
 const TABS = {
   HOME: "home",

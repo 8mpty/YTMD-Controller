@@ -17,7 +17,7 @@ import {
   createPlaylist,
   addTrackToPlaylist,
   getPlaylistsContainingTrack,
-} from "../services/PlayListDatabaseService";
+} from "../../services/PlayListDatabaseService";
 
 export default function PlaylistModal({ visible, onClose, track }) {
   const [playlists, setPlaylists] = useState([]);

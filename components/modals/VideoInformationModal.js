@@ -9,9 +9,9 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useApi } from "../context/ApiContext";
+import { useApi } from "../../context/ApiContext";
 import * as Clipboard from "expo-clipboard";
-import createApiService from "../services/apiService";
+import createApiService from "../../services/apiService";
 
 const InfoText = ({ label, text, onCopy }) => {
   if (!text) return null;

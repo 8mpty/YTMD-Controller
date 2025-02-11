@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Modal, TouchableOpacity } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
-import createApiService from "../services/apiService";
+import createApiService from "../../services/apiService";
 
 export default function VolumeDialog({
   initialVolume,

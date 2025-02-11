@@ -16,7 +16,7 @@ import {
   deletePlaylist,
   removeTrackFromPlaylist,
 } from "../services/PlayListDatabaseService";
-import PlaylistModal from "./PlaylistModal";
+import PlaylistModal from "./modals/PlaylistModal";
 import { useApi } from "../context/ApiContext";
 import createApiService from "../services/apiService";
 
