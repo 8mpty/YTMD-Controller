@@ -95,7 +95,7 @@ export const createApiService = (baseUrl) => {
 
     // Queue
     getQueue: () => api.get("/queue"),
-    addSongToQueue: (videoId) => api.post("/queue", { videoId, insertPosition: "INSERT_AT_END" }, false),
+    addSongToQueue: (videoId, insert) => api.post("/queue", { videoId, insertPosition: insert }, false),
     changeActiveSongInQueue: (index) => api.patch("/queue", { index: parseInt(index) }, false),
     clearQueue: () => api.delete("/queue"),
     moveSongInQueue: (fromIndex, toIndex) => api.patch(`/queue/${fromIndex}`, { toIndex }),

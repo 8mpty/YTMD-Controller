@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -20,77 +20,168 @@ import PlaylistModal from "./PlaylistModal";
 import { useApi } from "../context/ApiContext";
 import createApiService from "../services/apiService";
 
+// Separate component for playlist item to prevent unnecessary re-renders
+const PlaylistItem = React.memo(
+  ({ playlist, isSelected, onSelect, onDelete }) => (
+    <TouchableOpacity
+      style={[styles.playlistItem, isSelected && styles.selectedPlaylist]}
+      onPress={() => onSelect(playlist)}
+    >
+      <View style={styles.playlistInfo}>
+        <Text style={styles.playlistName}>{playlist.name}</Text>
+        <Text style={styles.trackCount}>{playlist.tracks.length} tracks</Text>
+      </View>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => onDelete(playlist.id)}
+      >
+        <Ionicons name="trash-outline" size={20} color="#ff4545" />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  )
+);
+
+// Separate component for track item
+const TrackItem = React.memo(({ track, onRemove }) => (
+  <TouchableOpacity style={styles.trackItem}>
+    <Image source={{ uri: track.imgSrc }} style={styles.trackImage} />
+    <View style={styles.trackInfo}>
+      <Text style={styles.trackTitle}>{track.title}</Text>
+      <Text style={styles.addedDate}>
+        Added: {new Date(track.added_date).toLocaleDateString()}
+      </Text>
+    </View>
+    <TouchableOpacity
+      style={styles.removeButton}
+      onPress={() => onRemove(track.videoId)}
+    >
+      <Ionicons name="remove-circle-outline" size={24} color="#ff4545" />
+    </TouchableOpacity>
+  </TouchableOpacity>
+));
+
+// Constants for delay and error messages
+const QUEUE_DELAY = 100;
+const ERROR_MESSAGES = {
+  DELETE_PLAYLIST: "Failed to delete playlist",
+  REMOVE_TRACK: "Failed to remove track from playlist",
+  PLAY_PLAYLIST: "Failed to play playlist",
+};
+
 export default function Library() {
   const { getBaseUrl } = useApi();
-  const api = createApiService(getBaseUrl());
+  const api = useMemo(() => createApiService(getBaseUrl()), [getBaseUrl]);
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const insets = useSafeAreaInsets();
 
-  useEffect(() => {
-    loadPlaylists();
-  }, []);
-
-  const loadPlaylists = async () => {
+  const loadPlaylists = useCallback(async () => {
     try {
       const allPlaylists = await getAllPlaylists();
       setPlaylists(allPlaylists);
     } catch (error) {
       console.error("Error loading playlists:", error);
     }
-  };
+  }, []);
 
-  const handleDeletePlaylist = async (playlistId) => {
-    Alert.alert(
-      "Delete Playlist",
-      "Are you sure you want to delete this playlist?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deletePlaylist(playlistId);
-              loadPlaylists();
-              if (selectedPlaylist?.id === playlistId) {
-                setSelectedPlaylist(null);
+  useEffect(() => {
+    loadPlaylists();
+  }, [loadPlaylists]);
+
+  const handleDeletePlaylist = useCallback(
+    async (playlistId) => {
+      Alert.alert(
+        "Delete Playlist",
+        "Are you sure you want to delete this playlist?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await deletePlaylist(playlistId);
+                await loadPlaylists();
+                if (selectedPlaylist?.id === playlistId) {
+                  setSelectedPlaylist(null);
+                }
+              } catch (error) {
+                console.error("Error deleting playlist:", error);
+                Alert.alert("Error", ERROR_MESSAGES.DELETE_PLAYLIST);
               }
-            } catch (error) {
-              console.error("Error deleting playlist:", error);
-              Alert.alert("Error", "Failed to delete playlist");
-            }
+            },
           },
-        },
-      ]
-    );
-  };
+        ]
+      );
+    },
+    [loadPlaylists, selectedPlaylist]
+  );
 
-  const handleRemoveTrack = async (playlistId, videoId) => {
+  const handleRemoveTrack = useCallback(
+    async (videoId) => {
+      if (!selectedPlaylist) return;
+
+      try {
+        await removeTrackFromPlaylist(selectedPlaylist.id, videoId);
+        await loadPlaylists();
+        const updatedPlaylist = playlists.find(
+          (p) => p.id === selectedPlaylist.id
+        );
+        setSelectedPlaylist(updatedPlaylist);
+      } catch (error) {
+        console.error("Error removing track:", error);
+        Alert.alert("Error", ERROR_MESSAGES.REMOVE_TRACK);
+      }
+    },
+    [selectedPlaylist, playlists, loadPlaylists]
+  );
+
+  const handlePlayPlaylist = useCallback(async () => {
+    if (!selectedPlaylist?.tracks.length) return;
+
     try {
-      await removeTrackFromPlaylist(playlistId, videoId);
-      loadPlaylists();
-      const updatedPlaylist = playlists.find((p) => p.id === playlistId);
-      setSelectedPlaylist(updatedPlaylist);
+      await api.clearQueue();
+      await Promise.all(
+        selectedPlaylist.tracks.map(
+          (track, index) =>
+            new Promise((resolve) =>
+              setTimeout(async () => {
+                await api.addSongToQueue(track.videoId, "INSERT_AT_END");
+                resolve();
+              }, index * QUEUE_DELAY)
+            )
+        )
+      );
+
+      await api.changeActiveSongInQueue(0);
     } catch (error) {
-      console.error("Error removing track:", error);
-      Alert.alert("Error", "Failed to remove track from playlist");
+      console.error("Error playing playlist:", error);
+      Alert.alert("Error", ERROR_MESSAGES.PLAY_PLAYLIST);
     }
-  };
+  }, [selectedPlaylist, api]);
+
+  const containerStyle = useMemo(
+    () => [
+      styles.container,
+      {
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+      },
+    ],
+    [insets]
+  );
+
+  const handleModalClose = useCallback(() => {
+    setShowPlaylistModal(false);
+    loadPlaylists();
+  }, [loadPlaylists]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom,
-          paddingLeft: insets.left,
-          paddingRight: insets.right,
-        },
-      ]}
-    >
+    <View style={containerStyle}>
+      {/* AVAILABLE PLAYLISTS / LEFT COLUMN */}
       <View style={styles.sidebar}>
         <View style={styles.sidebarHeader}>
           <TouchableOpacity
@@ -112,119 +203,63 @@ export default function Library() {
           contentContainerStyle={styles.playlistScrollContent}
         >
           {playlists.map((playlist) => (
-            <TouchableOpacity
+            <PlaylistItem
               key={playlist.id}
-              style={[
-                styles.playlistItem,
-                selectedPlaylist?.id === playlist.id && styles.selectedPlaylist,
-              ]}
-              onPress={() => setSelectedPlaylist(playlist)}
-            >
-              <View style={styles.playlistInfo}>
-                <Text style={styles.playlistName}>{playlist.name}</Text>
-                <Text style={styles.trackCount}>
-                  {playlist.tracks.length} tracks
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeletePlaylist(playlist.id)}
-              >
-                <Ionicons name="trash-outline" size={20} color="#ff4545" />
-              </TouchableOpacity>
-            </TouchableOpacity>
+              playlist={playlist}
+              isSelected={selectedPlaylist?.id === playlist.id}
+              onSelect={setSelectedPlaylist}
+              onDelete={handleDeletePlaylist}
+            />
           ))}
         </ScrollView>
       </View>
 
-      <View style={styles.content}>
-        {selectedPlaylist ? (
-          <View style={styles.playlistContent}>
-            {/* Play Current Playlist Button */}
-            <TouchableOpacity
-              style={styles.playButton}
-              onPress={async () => {
-                try {
-                  // Clear the current queue
-                  await api.clearQueue();
+      {/* TRACKS IN PLAYLISTS / RIGHT COLUMN */}
+      <View style={styles.tracksSection}>
+        <View style={styles.sidebarHeader}>
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={handlePlayPlaylist}
+            disabled={!selectedPlaylist?.tracks.length}
+          >
+            <Ionicons
+              name="play-outline"
+              size={24}
+              color="#fff"
+              style={styles.createButtonIcon}
+            />
+            <Text style={styles.createButtonText}>Play Playlist</Text>
+          </TouchableOpacity>
+        </View>
 
-                  for (let i = 0; i < selectedPlaylist.tracks.length; i++) {
-                    const track = selectedPlaylist.tracks[i];
-                    await api.addSongToQueue(track.videoId);
-
-                    // Add delay to ensure order is correct
-                    if (i < selectedPlaylist.tracks.length - 1) {
-                      await new Promise((resolve) => setTimeout(resolve, 100));
-                    }
-                  }
-
-                  await api.changeActiveSongInQueue(0);
-                } catch (error) {
-                  console.error("Error playing playlist:", error);
-                  Alert.alert("Error", "Failed to play playlist");
-                }
-              }}
-            >
-              <Ionicons
-                name="play-outline"
-                size={24}
-                color="#fff"
-                style={styles.createButtonIcon}
-              />
-              <Text style={styles.createButtonText}>Play Playlist</Text>
-            </TouchableOpacity>
-
-            <ScrollView
-              style={styles.tracksScroll}
-              contentContainerStyle={styles.tracksScrollContent}
-            >
+        <ScrollView
+          style={styles.playlistScroll}
+          contentContainerStyle={styles.playlistScrollContent}
+        >
+          {selectedPlaylist ? (
+            <View style={styles.playlistContent}>
               {selectedPlaylist.tracks.map((track) => (
-                <View key={track.videoId} style={styles.trackItem}>
-                  <Image
-                    source={{ uri: track.imgSrc }}
-                    style={styles.trackImage}
-                  />
-                  <View style={styles.trackInfo}>
-                    <Text style={styles.trackTitle}>{track.title}</Text>
-                    <Text style={styles.addedDate}>
-                      Added: {new Date(track.added_date).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() =>
-                      handleRemoveTrack(selectedPlaylist.id, track.videoId)
-                    }
-                  >
-                    <Ionicons
-                      name="remove-circle-outline"
-                      size={24}
-                      color="#ff4545"
-                    />
-                  </TouchableOpacity>
-                </View>
+                <TrackItem
+                  key={track.videoId}
+                  track={track}
+                  onRemove={handleRemoveTrack}
+                />
               ))}
               {selectedPlaylist.tracks.length === 0 && (
                 <Text style={styles.emptyText}>No tracks in this playlist</Text>
               )}
-            </ScrollView>
-          </View>
-        ) : (
-          <View style={styles.noSelectionContent}>
-            <Text style={styles.noSelectionText}>
-              Select a playlist to view its contents
-            </Text>
-          </View>
-        )}
+            </View>
+          ) : (
+            <View style={styles.noSelectionContent}>
+              <Text style={styles.noSelectionText}>
+                Select a playlist to view its contents
+              </Text>
+            </View>
+          )}
+        </ScrollView>
       </View>
 
-      <PlaylistModal
-        visible={showPlaylistModal}
-        onClose={() => {
-          setShowPlaylistModal(false);
-          loadPlaylists();
-        }}
-      />
+      <PlaylistModal visible={showPlaylistModal} onClose={handleModalClose} />
     </View>
   );
 }
@@ -234,16 +269,35 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     backgroundColor: "#000",
-    paddingBottom: 80,
+    ...(Platform.OS === "web" && {
+      height: "calc(100vh - 150px)",
+    }),
   },
   sidebar: {
-    width: "25%",
+    flex: 1,
     minWidth: 300,
     borderRightWidth: 1,
     borderRightColor: "#333",
+    ...(Platform.OS === "web" && {
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+    }),
+  },
+  tracksSection: {
+    flex: 2,
+    minWidth: 600,
+    ...(Platform.OS === "web" && {
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+    }),
   },
   sidebarHeader: {
     padding: 16,
+    ...(Platform.OS === "web" && {
+      flexShrink: 0,
+    }),
   },
   createButton: {
     flexDirection: "row",
@@ -252,15 +306,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-  },
-  playButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ff2c86",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 15,
   },
   createButtonIcon: {
     marginRight: 8,
@@ -273,15 +318,19 @@ const styles = StyleSheet.create({
   playlistScroll: {
     flex: 1,
     paddingHorizontal: 16,
-    marginBottom: "35%",
+    ...(Platform.OS === "web" && {
+      maxHeight: "calc((80px + 8px) * 5)",
+      overflowY: "auto",
+    }),
   },
   playlistScrollContent: {
     ...(Platform.OS === "web"
       ? {
-          maxHeight: "40vh",
-          overflowY: "auto",
+          paddingBottom: 8,
         }
-      : {}),
+      : {
+          paddingBottom: 100,
+        }),
   },
   playlistItem: {
     flexDirection: "row",
@@ -291,6 +340,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#222",
     borderRadius: 8,
     marginBottom: 8,
+    ...(Platform.OS === "web" && {
+      height: 80,
+    }),
   },
   selectedPlaylist: {
     borderColor: "#ff2c86",
@@ -312,30 +364,10 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 4,
   },
-  content: {
-    flex: 1,
-    padding: 16,
-  },
   playlistContent: {
-    flex: 1,
-  },
-  playlistTitle: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  tracksScroll: {
-    flex: 1,
-    marginBottom: "15%",
-  },
-  tracksScrollContent: {
-    ...(Platform.OS === "web"
-      ? {
-          maxHeight: "40vh",
-          overflowY: "auto",
-        }
-      : {}),
+    ...(Platform.OS === "web" && {
+      minHeight: "min-content",
+    }),
   },
   trackItem: {
     flexDirection: "row",

@@ -238,7 +238,7 @@ export default function PlayerScreen() {
                         ? { uri: songInfo.imageSrc }
                         : require("../assets/no-connection.png")
                     }
-                    style={[styles.artwork, { width: imageSize, height: imageSize }]}
+                    style={[styles.artwork, { width: imageSize - 20, height: imageSize - 20 }]}
                   />
                   <View style={[styles.info, { paddingRight: screenWidth * 0.1 }]}>
                     <Text

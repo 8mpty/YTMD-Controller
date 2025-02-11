@@ -109,7 +109,7 @@ export default function PlaylistModal({ visible, onClose, track }) {
       <View style={styles.modalBackdrop}>
         <View style={modalContentStyle}>
           <View style={styles.header}>
-            <Text style={styles.title}>Add to Playlist</Text>
+            <Text style={styles.title}>Playlist</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <Ionicons name="close" size={24} color="#666666" />
             </TouchableOpacity>
@@ -160,7 +160,7 @@ export default function PlaylistModal({ visible, onClose, track }) {
                       color="#fff"
                     />
                     <Text style={styles.newPlaylistText}>
-                      Create New Playlist
+                      New Playlist
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   leftColumn: {
     flex: 1,
     maxWidth: "35%",
-    paddingRight: 16,
+    // paddingRight: 16,
     display: "flex",
     flexDirection: "column",
   },
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderLeftWidth: 1,
     borderLeftColor: "#333",
-    paddingLeft: 16,
+    // paddingLeft: 16,
     height: "100%",
   },
   header: {

@@ -23,6 +23,7 @@ const TABS = {
   NOWPLAYING: "nowplaying",
   LIBRARY: "library",
 };
+const dev = true;
 
 export default function TopBar({
   onRefresh,
@@ -124,26 +125,29 @@ export default function TopBar({
           />
           {isCollapsed && activeTab === TABS.SEARCH && (
             <>
-              <View style={styles.searchContainer}>
-                <TextInput
-                  style={styles.searchInput}
-                  placeholderTextColor="#999"
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoFocus
-                  multiline={false}
-                  numberOfLines={1}
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    style={styles.clearButton}
-                    onPress={() => setSearchQuery("")}
-                  >
-                    <Ionicons name="close-circle" size={16} color="#999" />
-                  </TouchableOpacity>
-                )}
-              </View>
+              {dev !== false ? (
+                <View style={styles.searchContainer}>
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholderTextColor="#999"
+                    placeholder="Search Here"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    multiline={false}
+                    numberOfLines={1}
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity
+                      style={styles.clearButton}
+                      onPress={() => setSearchQuery("")}
+                    >
+                      <Ionicons name="close-circle" size={16} color="#999" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ) : (
+                <Text style={styles.tabText}>Search</Text>
+              )}
               <View style={styles.underline} />
             </>
           )}
