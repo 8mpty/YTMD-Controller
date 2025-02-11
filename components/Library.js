@@ -315,33 +315,33 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     backgroundColor: "#000000",
-    height: Platform.OS === "web" ? "100vh" : "100%",
-    overflow: Platform.OS === "web" ? "hidden" : "visible",
+    height:
+      Platform.OS === "web" ? `calc(100vh - 100px)` : "100%",
+    maxHeight:
+      Platform.OS === "web" ? `calc(100vh - 100px)` : "100%",
+    overflow: "hidden",
   },
   sidebar: {
-    width: Platform.OS === "ios" ? "30%" : Platform.OS === "android" ? "25%" : "20%",
+    width:
+      Platform.OS === "ios" ? "30%" : Platform.OS === "android" ? "25%" : "20%",
     borderRightWidth: 1,
     borderRightColor: "#333333",
-    ...(Platform.OS === "web" && {
-      height: "100%",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-    }),
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
   },
   tracksSection: {
     flex: 1,
-    ...(Platform.OS === "web" && {
-      height: "100%",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-    }),
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
   },
   sidebarHeader: {
     padding: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#333333",
+    backgroundColor: "#000000",
+    zIndex: 1,
   },
   createButton: {
     backgroundColor: "#FF1493",
@@ -364,6 +364,7 @@ const styles = StyleSheet.create({
     ...(Platform.OS === "web" && {
       overflowY: "auto",
       overflowX: "hidden",
+      WebkitOverflowScrolling: "touch",
       "&::-webkit-scrollbar": {
         width: "8px",
       },
@@ -378,8 +379,14 @@ const styles = StyleSheet.create({
   },
   playlistScrollContent: {
     padding: 16,
+    ...(Platform.OS === "web" && {
+      minHeight: "min-content",
+    }),
+  },
+  playlistScrollContent: {
+    padding: 16,
     paddingBottom:
-      Platform.OS === "ios" ? 130 : Platform.OS === "android" ? 105 : 140,
+      Platform.OS === "ios" ? 130 : Platform.OS === "android" ? 105 : 85,
     ...(Platform.OS === "web" && {
       minHeight: "min-content",
     }),
