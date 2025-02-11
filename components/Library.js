@@ -42,8 +42,11 @@ const PlaylistItem = React.memo(
 );
 
 // Separate component for track item
-const TrackItem = React.memo(({ track, onRemove }) => (
-  <TouchableOpacity style={styles.trackItem}>
+const TrackItem = React.memo(({ track, onRemove, onPlay }) => (
+  <TouchableOpacity
+    style={styles.trackItem}
+    onPress={() => onPlay(track)} // Add click handler for the whole track item
+  >
     <Image source={{ uri: track.imgSrc }} style={styles.trackImage} />
     <View style={styles.trackInfo}>
       <Text style={styles.trackTitle}>{track.title}</Text>
@@ -53,7 +56,10 @@ const TrackItem = React.memo(({ track, onRemove }) => (
     </View>
     <TouchableOpacity
       style={styles.removeButton}
-      onPress={() => onRemove(track.videoId)}
+      onPress={(e) => {
+        e.stopPropagation(); // Prevent triggering the parent's onPress
+        onRemove(track.videoId);
+      }}
     >
       <Ionicons name="remove-circle-outline" size={24} color="#ff4545" />
     </TouchableOpacity>
@@ -118,6 +124,45 @@ export default function Library() {
     [loadPlaylists, selectedPlaylist]
   );
 
+  const handlePlayFromTrack = useCallback(
+    async (selectedTrack) => {
+      if (!selectedPlaylist?.tracks.length) return;
+      try {
+        const trackIndex = selectedPlaylist.tracks.findIndex(
+          (track) => track.videoId === selectedTrack.videoId
+        );
+        if (trackIndex === -1) return;
+        await api.clearQueue();
+
+        // Create an array of promises for adding tracks
+        const addTrackPromises = selectedPlaylist.tracks.map(
+          (track, index) =>
+            new Promise((resolve) =>
+              setTimeout(async () => {
+                try {
+                  await api.addSongToQueue(track.videoId, "INSERT_AT_END");
+                  resolve();
+                } catch (error) {
+                  console.error(`Error adding track ${track.videoId}:`, error);
+                  resolve();
+                }
+              }, index * QUEUE_DELAY)
+            )
+        );
+        await Promise.all(addTrackPromises);
+
+        // Delay
+        await new Promise((resolve) => setTimeout(resolve, QUEUE_DELAY));
+
+        await api.changeActiveSongInQueue(trackIndex);
+      } catch (error) {
+        console.error("Error playing track:", error);
+        Alert.alert("Error", ERROR_MESSAGES.PLAY_PLAYLIST);
+      }
+    },
+    [selectedPlaylist, api]
+  );
+
   const handleRemoveTrack = useCallback(
     async (videoId) => {
       if (!selectedPlaylist) return;
@@ -167,8 +212,8 @@ export default function Library() {
       {
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
-        paddingLeft: insets.left,
-        paddingRight: insets.right,
+        paddingLeft: Math.max(insets.left),
+        paddingRight: Math.max(insets.right),
       },
     ],
     [insets]
@@ -194,7 +239,7 @@ export default function Library() {
               color="#fff"
               style={styles.createButtonIcon}
             />
-            <Text style={styles.createButtonText}>Create Playlist</Text>
+            <Text style={styles.createButtonText}>New Playlist</Text>
           </TouchableOpacity>
         </View>
 
@@ -243,6 +288,7 @@ export default function Library() {
                   key={track.videoId}
                   track={track}
                   onRemove={handleRemoveTrack}
+                  onPlay={handlePlayFromTrack}
                 />
               ))}
               {selectedPlaylist.tracks.length === 0 && (
@@ -268,151 +314,145 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: "row",
-    backgroundColor: "#000",
-    ...(Platform.OS === "web" && {
-      height: "calc(100vh - 150px)",
-    }),
+    backgroundColor: "#000000",
+    height: Platform.OS === "web" ? "100vh" : "100%",
+    overflow: Platform.OS === "web" ? "hidden" : "visible",
   },
   sidebar: {
-    flex: 1,
-    minWidth: 300,
+    width: Platform.OS === "ios" ? "30%" : Platform.OS === "android" ? "25%" : "20%",
     borderRightWidth: 1,
-    borderRightColor: "#333",
+    borderRightColor: "#333333",
     ...(Platform.OS === "web" && {
+      height: "100%",
+      overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      height: "100%",
     }),
   },
   tracksSection: {
-    flex: 2,
-    minWidth: 600,
+    flex: 1,
     ...(Platform.OS === "web" && {
+      height: "100%",
+      overflow: "hidden",
       display: "flex",
       flexDirection: "column",
-      height: "100%",
     }),
   },
   sidebarHeader: {
-    padding: 16,
-    ...(Platform.OS === "web" && {
-      flexShrink: 0,
-    }),
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333333",
   },
   createButton: {
+    backgroundColor: "#FF1493",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ff2c86",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    justifyContent: "center",
+    padding: 8,
     borderRadius: 8,
   },
   createButtonIcon: {
     marginRight: 8,
   },
   createButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "500",
   },
   playlistScroll: {
     flex: 1,
-    paddingHorizontal: 16,
     ...(Platform.OS === "web" && {
-      maxHeight: "calc((80px + 8px) * 5)",
       overflowY: "auto",
+      overflowX: "hidden",
+      "&::-webkit-scrollbar": {
+        width: "8px",
+      },
+      "&::-webkit-scrollbar-track": {
+        background: "#1A1A1A",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        background: "#333333",
+        borderRadius: "4px",
+      },
     }),
   },
   playlistScrollContent: {
-    ...(Platform.OS === "web"
-      ? {
-          paddingBottom: 8,
-        }
-      : {
-          paddingBottom: 100,
-        }),
+    padding: 16,
+    paddingBottom:
+      Platform.OS === "ios" ? 130 : Platform.OS === "android" ? 105 : 140,
+    ...(Platform.OS === "web" && {
+      minHeight: "min-content",
+    }),
   },
   playlistItem: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#222",
+    padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    ...(Platform.OS === "web" && {
-      height: 80,
-    }),
+    backgroundColor: "#1A1A1A",
   },
   selectedPlaylist: {
-    borderColor: "#ff2c86",
-    borderWidth: 2,
+    borderWidth: 1,
+    borderColor: "#FF1493",
   },
   playlistInfo: {
     flex: 1,
   },
   playlistName: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "500",
   },
   trackCount: {
-    color: "#666",
-    fontSize: 12,
-    marginTop: 4,
+    color: "#808080",
+    fontSize: 14,
   },
   deleteButton: {
-    padding: 4,
-  },
-  playlistContent: {
-    ...(Platform.OS === "web" && {
-      minHeight: "min-content",
-    }),
+    padding: 8,
   },
   trackItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#222",
+    padding: 12,
     borderRadius: 8,
     marginBottom: 8,
-    height: 80,
+    backgroundColor: "#1A1A1A",
   },
   trackImage: {
     width: 48,
     height: 48,
     borderRadius: 4,
-    marginRight: 16,
+    marginRight: 12,
   },
   trackInfo: {
     flex: 1,
   },
   trackTitle: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "500",
   },
   addedDate: {
-    color: "#666",
-    fontSize: 12,
-    marginTop: 4,
+    color: "#808080",
+    fontSize: 14,
   },
   removeButton: {
-    padding: 4,
+    padding: 8,
+  },
+  emptyText: {
+    color: "#808080",
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 24,
   },
   noSelectionContent: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
   },
   noSelectionText: {
-    color: "#666",
-    fontSize: 18,
-  },
-  emptyText: {
-    color: "#666",
+    color: "#808080",
     fontSize: 16,
-    textAlign: "center",
-    marginTop: 20,
   },
 });

@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
   placeholderContent: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    // alignItems: "center", // ALL BECAUSE OF YOUUUUUUUU
     backgroundColor: "#000",
   },
   placeholderText: {

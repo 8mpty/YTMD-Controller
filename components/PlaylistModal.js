@@ -261,8 +261,8 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     flex: 1,
-    borderLeftWidth: 1,
-    borderLeftColor: "#333",
+    // borderLeftWidth: 1,
+    // borderLeftColor: "#333",
     // paddingLeft: 16,
     height: "100%",
   },
