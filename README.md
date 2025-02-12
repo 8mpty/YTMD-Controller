@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://raw.githubusercontent.com/8mpty/YTMD-Controller/refs/heads/main/docs/github_images/my-logo.png" alt="YTMD-Controller">
+    <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/my-logo.png" alt="YTMD-Controller">
     <br>
     YTMD-Controller
 </h1>
@@ -24,15 +24,15 @@ Please navigate to the [Disclaimers](https://github.com/8mpty/YTMD-Controller/tr
 
 ## Screenshots
 
-More can be found in the [docs folder](https://github.com/8mpty/YTMD-Controller/tree/main/docs/github_images/pngs) 
+More can be found in the [docs folder](https://github.com/8mpty/YTMD-Controller/tree/master/docs/github_images) 
 
 | Main Player | Lyrics |
 |:-:|:-:|
-| <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_main_player.jpeg" width="400" alt="MainPlayer"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_lyrics.jpeg" width="400" alt="Lyrics"> |
+| <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_main_player.jpeg" width="400" alt="MainPlayer"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_lyrics.jpeg" width="400" alt="Lyrics"> |
 | **Track Info** | **Clock** |
-| <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_track_information.jpeg" width="400" alt="Queue"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_clock.jpeg" width="400" alt="Library"> |
+| <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_track_information.jpeg" width="400" alt="Queue"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_clock.jpeg" width="400" alt="Library"> |
 | **Queue** | **Local Library** |
-| <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_queue.jpeg" width="400" alt="Queue"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/main/docs/github_images/app_library.jpeg" width="400" alt="Library"> |
+| <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_queue.jpeg" width="400" alt="Queue"> | <img src="https://github.com/8mpty/YTMD-Controller/blob/master/docs/github_images/app_library.jpeg" width="400" alt="Library"> |
 
 ## Disclaimers
 
