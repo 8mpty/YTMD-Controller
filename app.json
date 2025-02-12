@@ -15,12 +15,15 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
-      "orientationLock": "landscape",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
       },
       "bundleIdentifier": "com.x8mpty.ytmdcontroller"
     },
@@ -30,15 +33,10 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.x8mpty.ytmdcontroller",
-      "networkSecurityConfig": {
-        "allowHttp": true,
-        "cleartextTrafficPermitted": true
-      },
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ],
-      "orientation": "landscape"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -50,6 +48,7 @@
           "enableFTS": false,
           "useSQLCipher": false,
           "android": {
+            "usesCleartextTraffic": true,
             "enableFTS": false,
             "useSQLCipher": false
           },
