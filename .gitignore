@@ -34,5 +34,10 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+
+# Custom Stuff
 android/gradle.properties
-android
+android/app/my-upload-key-keystore
+android/
+ios/
