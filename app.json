@@ -4,11 +4,11 @@
     "slug": "ytmd-controller",
     "version": "1.0.0",
     "orientation": "landscape",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/new-icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/new-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
