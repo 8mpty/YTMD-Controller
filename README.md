@@ -29,8 +29,8 @@ Please navigate to the [Disclaimers](https://github.com/8mpty/YTMD-Controller?ta
 
 1. Ensure that the API Server plugin is `Enabled` in the YouTube Music Desktop application.
 2. Ensure that the authorization strategy is set to `No authorization`.
-3. Download and install the YTMD-Controller to your device.
-4. Configure the connection settings but you may skip this step entirely but there would be functionality limitations.
+3. Download and install the `YTMD-Controller` to your device.
+4. Configure the `Connection Settings` but you may skip this step entirely but there would be functionality limitations.
 
 ## Screenshots
 
