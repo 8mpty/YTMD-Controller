@@ -5,15 +5,25 @@
 </h1>
 
 ## About
+`YTMD-Controller` stands for `Youtube Music Desktop - Controller` for short.
+
 Control the [Youtube Desktop Music](https://github.com/th-ch/youtube-music) app from your Android / IOS* / Web* devices.
 
 An [Expo](https://expo.dev/) app written in JavaScript.
 
-UI is HEAVILY inspired on the sadly discontinued [Spotify Car Thing](https://support.spotify.com/us/article/car-thing-discontinued/)
+UI is HEAVILY inspired on the sadly discontinued [Spotify Car Thing](https://support.spotify.com/us/article/car-thing-discontinued/).
 
-Download [here](https://github.com/8mpty/YTMD-Controller/releases)
+Download [here](https://github.com/8mpty/YTMD-Controller/releases).
 
-Please navigate to the [Disclaimers](https://github.com/8mpty/YTMD-Controller/tree/main#disclaimers) section regarding the devices.
+Please navigate to the [Disclaimers](https://github.com/8mpty/YTMD-Controller?tab=readme-ov-file#disclaimers) section regarding the devices.
+
+## Features
+
+- Basic control functionalities (play/pause/skip/seek/shuffle/repeat)
+- Lyrics intergration ([LRCGET](https://lrclib.net/docs))
+- Live Queue
+- Local Playlists
+- Likes/Playlists Local Database
 
 ## To Get Started
 
@@ -54,7 +64,7 @@ Step 1: [Clone](https://github.com/8mpty/YTMD-Controller.git) this repo onto you
 
 Step 2: cd into the project library and Run
 ```bash
- # Ensure you have nodejs install with all the react-native / expo libraries installed
+# Ensure you have nodejs install with all the react-native / expo libraries installed
 npm install
 ```
 
@@ -87,7 +97,7 @@ Step 1: [Clone](https://github.com/8mpty/YTMD-Controller.git) this repo onto you
 
 Step 2: cd into the project library and Run
 ```bash
- # Ensure you have nodejs install with all the react-native / expo libraries installed
+# Ensure you have nodejs install with all the react-native / expo libraries installed
 npm install
 ```
 
@@ -112,26 +122,28 @@ Every time you would like to use the app, run the ```npm start``` command again.
 
 <details><summary>Android</summary>
   
-- Google Pixel 4a
-- Xiaomi Pocophone F1
-- Xiaomi Mi 9T Pro
-- Samsung Note 9
-- Nothing Phone 1
-- Honor Magic V2
+- Samsung S7 (Android 9)
+- Honor 10 (Android 10)
+- Google Pixel 4a (Android 13)
+- Xiaomi Pocophone F1 (Android 13)
+- Xiaomi Mi 9T Pro (Android 13)
+- Samsung Note 9 (Android 14)
+- Nothing Phone 1 (Android 14)
+- Honor Magic V2 (Android 15)
   
 </details>
   
 <details><summary>IOS</summary>
   
-- Iphone XR
-- Iphone 12 mini
+- Iphone XR (iOS 17.3)
+- Iphone 12 mini (iOS 18.3.1)
   
 </details>
 
 <details><summary>WEB Browsers</summary>
   
 - Firefox Developer Edition
-- Google Chrome
+- Chromium Based Browsers
   
 </details>
 
