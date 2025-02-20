@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start --reset-cache",
+    "start": "expo start --reset-cache --port 8888",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
@@ -18,6 +18,7 @@
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
     "expo": "52.0.33",
     "expo-clipboard": "~7.0.1",
     "expo-screen-orientation": "~8.0.4",

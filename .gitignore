@@ -41,3 +41,4 @@ android/gradle.properties
 android/app/my-upload-key-keystore
 android/
 ios/
+.env

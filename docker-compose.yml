@@ -1,0 +1,9 @@
+services:
+  ytmd-controller:
+    image: ytmd-controller
+    container_name: ytmd-controller
+    env_file:
+      - .env
+    ports:
+      - "8888:8888"
+    restart: unless-stopped
